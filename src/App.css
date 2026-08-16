@@ -1,0 +1,447 @@
+/* QUVO Studio Dashboard - Ant Design Override & Custom Styles */
+
+/* ─── LOGIN PAGE ───────────────────────────────────────────────────────────── */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--color-paper);
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-bone) !important;
+  border: 1px solid var(--color-line) !important;
+  box-shadow: 0 20px 40px rgba(58, 46, 36, 0.05) !important;
+  padding: 1.5rem 0.5rem;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-logo h1 {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.login-logo p {
+  color: var(--color-mute);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ─── LAYOUT STRUCTURE ──────────────────────────────────────────────────────── */
+.dashboard-layout {
+  min-height: 100vh;
+  background-color: var(--color-paper) !important;
+}
+
+.dashboard-sidebar {
+  background: var(--color-paper) !important;
+  border-right: 1px solid var(--color-line) !important;
+}
+
+.sidebar-logo {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-logo h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.sidebar-logo span {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  padding: 0.1rem 0.3rem;
+  font-weight: 500;
+}
+
+.sidebar-menu {
+  background: transparent !important;
+  border-inline-end: none !important;
+  padding: 1rem 0;
+}
+
+/* Antd Menu Overrides */
+.sidebar-menu .ant-menu-item {
+  border-radius: 0 !important;
+  margin: 0.2rem 0 !important;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--color-mute) !important;
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  color: var(--color-ink) !important;
+}
+
+.sidebar-menu .ant-menu-item-selected {
+  background-color: rgba(127, 109, 94, 0.06) !important;
+  color: var(--color-ink) !important;
+  font-weight: 600;
+}
+
+.sidebar-menu .ant-menu-item-selected::after {
+  border-right-color: var(--color-ink) !important;
+}
+
+.sidebar-user {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 1.25rem;
+  border-top: 1px solid var(--color-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(127, 109, 94, 0.02);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-info .name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.user-info .role {
+  font-size: 0.7rem;
+  color: var(--color-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.logout-btn {
+  color: var(--color-wine);
+  cursor: pointer;
+  padding: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.logout-btn:hover {
+  background-color: rgba(139, 46, 59, 0.08);
+}
+
+.dashboard-content-area {
+  padding: 2.5rem;
+  background-color: var(--color-paper) !important;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  overflow-y: auto;
+}
+
+/* ─── ANTD COMPONENT OVERRIDES ─────────────────────────────────────────────── */
+
+/* Card overrides */
+.ant-card {
+  border-radius: 0px !important;
+  border: 1px solid var(--color-line) !important;
+  background-color: var(--color-bone) !important;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid var(--color-line) !important;
+  background-color: rgba(127, 109, 94, 0.02) !important;
+}
+
+.ant-card-head-title {
+  font-family: var(--font-serif) !important;
+  font-size: 1.25rem !important;
+  font-weight: 400 !important;
+  color: var(--color-ink) !important;
+}
+
+/* Modal overrides */
+.ant-modal-content {
+  border-radius: 0px !important;
+  background-color: var(--color-paper) !important;
+  border: 1px solid var(--color-line) !important;
+  box-shadow: 0 25px 50px -12px rgba(58, 46, 36, 0.15) !important;
+  padding: 1.5rem !important;
+}
+
+.ant-modal-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--color-line) !important;
+  padding-bottom: 0.75rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.ant-modal-title {
+  font-family: var(--font-serif) !important;
+  font-size: 1.6rem !important;
+  font-weight: 400 !important;
+  color: var(--color-ink) !important;
+}
+
+.ant-modal-footer {
+  border-top: 1px solid var(--color-line) !important;
+  padding-top: 0.75rem !important;
+  margin-top: 1.25rem !important;
+  background-color: transparent !important;
+}
+
+/* Drawer overrides */
+.ant-drawer-content {
+  background-color: var(--color-paper) !important;
+  border-radius: 0px !important;
+}
+
+.ant-drawer-header {
+  border-bottom: 1px solid var(--color-line) !important;
+}
+
+.ant-drawer-title {
+  font-family: var(--font-serif) !important;
+  font-size: 1.5rem !important;
+  font-weight: 400 !important;
+}
+
+.ant-drawer-footer {
+  border-top: 1px solid var(--color-line) !important;
+}
+
+/* Table overrides */
+.ant-table-wrapper .ant-table {
+  background: var(--color-bone) !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 0px !important;
+}
+
+.ant-table-thead > tr > th {
+  background-color: rgba(127, 109, 94, 0.03) !important;
+  border-bottom: 1px solid var(--color-line) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  color: var(--color-mute) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--color-line) !important;
+  font-size: 0.9rem !important;
+  color: var(--color-ink) !important;
+  padding: 1rem 1rem !important;
+}
+
+.ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+.ant-table-row:hover > td {
+  background-color: rgba(127, 109, 94, 0.02) !important;
+}
+
+/* Input, Select, and Form overrides */
+.ant-input, .ant-select-selector, .ant-input-number, .ant-input-password {
+  border-radius: 0px !important;
+  border: 1px solid var(--color-line) !important;
+  background-color: var(--color-bone) !important;
+  font-family: var(--font-sans) !important;
+  color: var(--color-ink) !important;
+}
+
+.ant-input:focus, .ant-select-focused .ant-select-selector, .ant-input-number:focus, .ant-input-password-focused {
+  border-color: var(--color-cocoa) !important;
+  box-shadow: none !important;
+}
+
+.ant-form-item-label > label {
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--color-mute) !important;
+}
+
+/* Collapse overrides (for categories) */
+.ant-collapse {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0px !important;
+}
+
+.ant-collapse-item {
+  border: 1px solid var(--color-line) !important;
+  background-color: var(--color-bone) !important;
+  margin-bottom: 0.85rem !important;
+  border-radius: 0px !important;
+}
+
+.ant-collapse-header {
+  padding: 0.85rem 1.25rem !important;
+}
+
+.ant-collapse-header-text {
+  font-family: var(--font-sans) !important;
+  font-size: 1.05rem !important;
+  font-weight: 500 !important;
+}
+
+.ant-collapse-content {
+  border-top: 1px solid var(--color-line) !important;
+  background-color: var(--color-bone) !important;
+}
+
+/* ─── METRIC CARDS ─────────────────────────────────────────────────────────── */
+.kpi-row {
+  margin-bottom: 2rem;
+}
+
+.kpi-card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-val {
+  font-size: 2.2rem;
+  font-family: var(--font-serif);
+  color: var(--color-ink);
+  margin-top: 0.15rem;
+}
+
+.kpi-icon {
+  background: rgba(184, 148, 106, 0.08);
+  color: var(--color-gold);
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.kpi-icon.wine {
+  background: rgba(139, 46, 59, 0.08);
+  color: var(--color-wine);
+}
+
+.kpi-icon.moss {
+  background: rgba(74, 93, 63, 0.08);
+  color: var(--color-moss);
+}
+
+.kpi-icon.cocoa {
+  background: rgba(127, 109, 94, 0.08);
+  color: var(--color-cocoa);
+}
+
+/* ─── CHARTS ───────────────────────────────────────────────────────────────── */
+.overview-breakdown-panel {
+  height: 100%;
+}
+
+.overview-svg-donut-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem 0;
+}
+
+/* ─── ORDERS MODAL LOOKBOOK ────────────────────────────────────────────────── */
+.lookbook-item-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--color-line);
+  padding: 0.75rem;
+  background: var(--color-bone);
+}
+
+.lookbook-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed var(--color-line);
+}
+
+.lookbook-item-row:last-child {
+  border-bottom: none;
+}
+
+.lookbook-item-details {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lookbook-item-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 1px solid var(--color-line);
+}
+
+/* ─── TOAST NOTIFICATIONS ──────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 9999;
+}
+
+.toast {
+  background: var(--color-bone);
+  border-left: 4px solid var(--color-mute);
+  box-shadow: 0 10px 30px rgba(58, 46, 36, 0.1);
+  padding: 0.85rem 1.25rem;
+  width: 320px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slide-up-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.toast-message {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.toast.success {
+  border-left-color: var(--color-moss);
+}
+
+.toast.error {
+  border-left-color: var(--color-wine);
+}

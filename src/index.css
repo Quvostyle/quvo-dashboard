@@ -1,0 +1,137 @@
+/* QUVO Studio Dashboard Design System */
+
+:root {
+  /* Brand color tokens */
+  --color-ink: #3A2E24;       /* deep warm brown - primary text */
+  --color-paper: #FAF8F3;     /* ivory background */
+  --color-bone: #FFFFFF;      /* clean white */
+  --color-mute: #8B7C6D;      /* muted mocha */
+  --color-line: #E7DDCC;      /* warm hairline separator */
+  --color-cocoa: #7F6D5E;     /* brand mocha */
+  --color-gold: #B8946A;      /* Indian-luxe gold accent */
+  --color-wine: #8B2E3B;      /* deep red - destructive/danger */
+  --color-moss: #4A5D3F;      /* deep green - success */
+
+  /* Typography */
+  --font-serif: "GFS Didot", "Cormorant Garamond", serif;
+  --font-sans: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-paper);
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--color-line);
+}
+
+::selection {
+  background: var(--color-cocoa);
+  color: var(--color-paper);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.005em;
+  color: var(--color-ink);
+}
+
+p {
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+code {
+  font-family: var(--font-mono);
+  background: rgba(127, 109, 94, 0.08);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Animations */
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease both;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-paper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-mute);
+}
+
+/* Global design utilities */
+.label-overline {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-mute);
+}
+
+.hairline {
+  border-top: 1px solid var(--color-line);
+}
+.hairline-y {
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* Grainy overlay for premium physical-like texture */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.24 0 0 0 0 0.18 0 0 0 0 0.14 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.45;
+}
