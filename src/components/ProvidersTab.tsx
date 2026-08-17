@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Input, Select, Space, Tag, Modal, Form, message, Avatar, Skeleton } from 'antd';
-import { LuPlus, LuSearch, LuPencil, LuTrash2, LuMail, LuPhone, LuHouse } from 'react-icons/lu';
+import { Button, Space, Tag, Modal, Form, message, Avatar, Skeleton } from 'antd';
+import { LuPlus, LuPencil, LuTrash2, LuMail, LuPhone, LuHouse } from 'react-icons/lu';
 import type { Provider } from '../services/dataService';
 import {
   useGetProvidersQuery,
@@ -18,8 +18,7 @@ export const ProvidersTab: React.FC = () => {
   const [updateProvider] = useUpdateProviderMutation();
   const [deleteProvider] = useDeleteProviderMutation();
 
-  const [providerSearch, setProviderSearch] = useState('');
-  const [providerGenderFilter, setProviderGenderFilter] = useState('all');
+
 
   // Provider Modal State (Add/Edit)
   const [showProviderModal, setShowProviderModal] = useState(false);
@@ -80,18 +79,7 @@ export const ProvidersTab: React.FC = () => {
     }
   };
 
-  const filteredProviders = useMemo(() => {
-    return providers.filter((p) => {
-      const matchesSearch =
-        p.full_name.toLowerCase().includes(providerSearch.toLowerCase()) ||
-        p.email.toLowerCase().includes(providerSearch.toLowerCase()) ||
-        p.mobile.includes(providerSearch);
 
-      const matchesGender = providerGenderFilter === 'all' || p.gender === providerGenderFilter;
-
-      return matchesSearch && matchesGender;
-    });
-  }, [providers, providerSearch, providerGenderFilter]);
 
   const columns = useMemo(() => [
     {
@@ -270,7 +258,7 @@ export const ProvidersTab: React.FC = () => {
       {/* Providers Table */}
       <Table
         columns={columns}
-        data={filteredProviders}
+        data={providers}
         pageSize={10}
       />
 
