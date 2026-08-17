@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Select, Input, Row, Col, InputNumber, Switch, Upload, Button, Space, Divider } from 'antd';
-import { UploadOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { LuUpload, LuCirclePlay, LuTrash2 } from 'react-icons/lu';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import type { Category } from '../services/dataService';
 
@@ -211,9 +211,9 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                         }}
                         showUploadList={false}
                       >
-                        <Button icon={<UploadOutlined />} size="small">Upload</Button>
+                        <Button icon={<LuUpload size={14} />} size="small">Upload</Button>
                       </Upload>
-                      <Button danger icon={<DeleteOutlined />} size="small" onClick={() => remove(index)} />
+                      <Button danger icon={<LuTrash2 size={14} />} size="small" onClick={() => remove(index)} />
                     </Space>
                   </Col>
                 </Row>
@@ -228,7 +228,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                 )}
               </div>
             ))}
-            <Button type="dashed" onClick={() => append('')} block icon={<PlayCircleOutlined />} size="large">
+            <Button type="dashed" onClick={() => append('')} block icon={<LuCirclePlay size={16} />} size="large">
               Add Video Clip
             </Button>
           </div>

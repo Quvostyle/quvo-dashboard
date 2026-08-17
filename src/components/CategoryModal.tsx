@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Input, Row, Col, InputNumber, Switch, Button, Upload, Space, Divider } from 'antd';
-import { UploadOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { LuUpload, LuCirclePlay, LuTrash2 } from 'react-icons/lu';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { useGetCategoriesQuery } from '../store/apiSlice';
 
@@ -182,7 +182,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 }}
                 showUploadList={false}
               >
-                <Button icon={<UploadOutlined />} style={{ width: '100%' }} size="large">Upload</Button>
+                <Button icon={<LuUpload size={16} />} style={{ width: '100%' }} size="large">Upload</Button>
               </Upload>
             </Col>
           </Row>
@@ -226,9 +226,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                         }}
                         showUploadList={false}
                       >
-                        <Button icon={<UploadOutlined />} size="small">Upload</Button>
+                        <Button icon={<LuUpload size={14} />} size="small">Upload</Button>
                       </Upload>
-                      <Button danger icon={<DeleteOutlined />} size="small" onClick={() => remove(index)} />
+                      <Button danger icon={<LuTrash2 size={14} />} size="small" onClick={() => remove(index)} />
                     </Space>
                   </Col>
                 </Row>
@@ -243,7 +243,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 )}
               </div>
             ))}
-            <Button type="dashed" onClick={() => append('')} block icon={<PlayCircleOutlined />} size="large">
+            <Button type="dashed" onClick={() => append('')} block icon={<LuCirclePlay size={16} />} size="large">
               Add Video Clip
             </Button>
           </div>

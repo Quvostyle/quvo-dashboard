@@ -2,14 +2,13 @@ import React, { useMemo } from "react";
 import { useTable, useSortBy, usePagination, useExpanded, useGlobalFilter } from "react-table";
 import { Button, Select, Input } from "antd";
 import {
-  LeftOutlined,
-  DoubleLeftOutlined,
-  RightOutlined,
-  DoubleRightOutlined,
-  RightOutlined as ExpandRightIcon,
-  DownOutlined as ExpandDownIcon,
-  SearchOutlined,
-} from "@ant-design/icons";
+  LuChevronLeft,
+  LuChevronsLeft,
+  LuChevronRight,
+  LuChevronsRight,
+  LuChevronDown,
+  LuSearch,
+} from "react-icons/lu";
 import CardLayout from "./CardLayout";
 
 interface TableProps {
@@ -75,22 +74,23 @@ export const Table: React.FC<TableProps> = ({
       {/* Top Header: Search & Pagination */}
       <CardLayout className="p-4 rounded-xl mb-4">
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center md:justify-between">
           {/* Search Input (Left) */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 w-full md:w-auto">
             <strong className="text-sm font-semibold text-gray-700">Search:</strong>
             <Input
               placeholder="Search records..."
               value={globalFilter || ""}
               onChange={(e) => setGlobalFilter(e.target.value || undefined)}
-              style={{ width: "260px", height: "36px", borderRadius: "6px" }}
-              prefix={<SearchOutlined style={{ color: "var(--color-mute)" }} />}
+              className="w-full md:w-[260px]"
+              style={{ height: "36px", borderRadius: "6px" }}
+              prefix={<LuSearch size={15} style={{ color: "var(--color-mute)" }} />}
               allowClear
             />
           </div>
 
           {isPaginated && (
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center gap-3 justify-between md:justify-end w-full md:w-auto">
               <span className="text-xs text-gray-500">
                 Page <strong className="text-gray-700">{pageIndex + 1}</strong> of{" "}
                 <strong className="text-gray-700">{pageOptions.length || 1}</strong>
@@ -112,28 +112,28 @@ export const Table: React.FC<TableProps> = ({
                   size="middle"
                   onClick={() => gotoPage(0)}
                   disabled={!canPreviousPage}
-                  icon={<DoubleLeftOutlined />}
+                  icon={<LuChevronsLeft size={16} />}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 />
                 <Button
                   size="middle"
                   onClick={() => previousPage()}
                   disabled={!canPreviousPage}
-                  icon={<LeftOutlined />}
+                  icon={<LuChevronLeft size={16} />}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 />
                 <Button
                   size="middle"
                   onClick={() => nextPage()}
                   disabled={!canNextPage}
-                  icon={<RightOutlined />}
+                  icon={<LuChevronRight size={16} />}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 />
                 <Button
                   size="middle"
                   onClick={() => gotoPage(pageCount - 1)}
                   disabled={!canNextPage}
-                  icon={<DoubleRightOutlined />}
+                  icon={<LuChevronsRight size={16} />}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 />
               </div>
@@ -239,12 +239,12 @@ export const Table: React.FC<TableProps> = ({
                                     className="cursor-pointer text-gray-400 hover:text-blue-500 flex items-center justify-center w-4 h-4 mr-1"
                                   >
                                     {row.isExpanded ? (
-                                      <ExpandDownIcon
-                                        style={{ fontSize: "10px" }}
+                                      <LuChevronDown
+                                        size={14}
                                       />
                                     ) : (
-                                      <ExpandRightIcon
-                                        style={{ fontSize: "10px" }}
+                                      <LuChevronRight
+                                        size={14}
                                       />
                                     )}
                                   </span>

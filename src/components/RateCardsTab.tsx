@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Space, Tag, Popconfirm, Form, message, Skeleton } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, Modal, Form, message, Skeleton } from 'antd';
+import { LuPlus, LuPencil, LuTrash2, LuImage } from 'react-icons/lu';
 import type { RateCard } from '../services/dataService';
 import {
   useGetRateCardsQuery,
@@ -87,66 +87,78 @@ export const RateCardsTab: React.FC = () => {
 
   const columns = useMemo(() => [
     {
-      Header: 'Name',
-      accessor: 'name',
-      Cell: ({ value }: any) => <strong>{value}</strong>
-    },
-    {
-      Header: 'Category',
-      accessor: 'categoryId',
-      Cell: ({ value }: any) => {
-        const parent = categories.find(c => c.id === value);
-        return parent ? <Tag color="blue">{parent.name}</Tag> : <span style={{ color: 'var(--color-mute)' }}>—</span>;
-      }
-    },
-    {
-      Header: 'Subcategory',
-      accessor: 'subcategoryId',
-      Cell: ({ value }: any) => {
-        const sub = categories.find(c => c.id === value);
-        return sub ? <Tag color="cyan">{sub.name}</Tag> : <span style={{ color: 'var(--color-mute)' }}>—</span>;
-      }
-    },
-    {
-      Header: 'Provider Partner',
-      accessor: 'providerId',
-      Cell: ({ value }: any) => {
-        const prov = providers.find(p => p.id === value);
-        return prov ? <span>{prov.full_name}</span> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Unassigned</span>;
-      }
-    },
-    {
-      Header: 'Price (INR)',
-      accessor: 'price',
-      Cell: ({ value }: any) => <strong>₹{value.toLocaleString()}</strong>
-    },
-    {
-      Header: 'Strike Price',
-      accessor: 'strikePrice',
-      Cell: ({ value }: any) => <span style={{ textDecoration: 'line-through', color: 'var(--color-mute)' }}>₹{value.toLocaleString()}</span>
-    },
-    {
-      Header: 'Badges',
-      id: 'badges',
+      Header: 'Rate Card Details',
+      id: 'rate_card_details',
       Cell: ({ row }: any) => {
         const record = row.original;
+        const mainImage = record.images?.[0];
         return (
-          <Space size="small">
-            {record.recommended && <Tag color="gold">Recommended</Tag>}
-            {record.bestDeal && <Tag color="purple">Best Deal</Tag>}
-          </Space>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {mainImage ? (
+              <img src={mainImage} alt={record.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-line)' }} />
+            ) : (
+              <div style={{ width: '48px', height: '48px', background: '#fafafa', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-line)' }}>
+                <LuImage size={20} style={{ color: '#ccc' }} />
+              </div>
+            )}
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--color-ink)' }}>{record.name}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-mute)', marginTop: '0.15rem' }}>
+                Type: <span style={{ fontWeight: 600, textTransform: 'uppercase' }}>{record.serviceType}</span>
+              </div>
+              <div style={{ marginTop: '0.25rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                {record.recommended && <Tag color="gold" style={{ fontSize: '0.7rem', margin: 0, padding: '0 6px', lineHeight: '1.4' }}>Recommended</Tag>}
+                {record.bestDeal && <Tag color="purple" style={{ fontSize: '0.7rem', margin: 0, padding: '0 6px', lineHeight: '1.4' }}>Best Deal</Tag>}
+                {record.images?.length > 0 && <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)' }}>📷 {record.images.length}</span>}
+                {record.videos?.length > 0 && <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)' }}>🎥 {record.videos.length}</span>}
+              </div>
+            </div>
+          </div>
         );
       }
     },
     {
-      Header: 'Type',
-      accessor: 'serviceType',
-      Cell: ({ value }: any) => <span style={{ textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600 }}>{value}</span>
+      Header: 'Category & Partner',
+      id: 'category_partner',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        const parent = categories.find(c => c.id === record.categoryId);
+        const sub = categories.find(c => c.id === record.subcategoryId);
+        const prov = providers.find(p => p.id === record.providerId);
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+            <div><span style={{ color: 'var(--color-mute)' }}>Category:</span> {parent ? <Tag color="blue" style={{ margin: 0 }}>{parent.name}</Tag> : '—'}</div>
+            <div><span style={{ color: 'var(--color-mute)' }}>Subcategory:</span> {sub ? <Tag color="cyan" style={{ margin: 0 }}>{sub.name}</Tag> : '—'}</div>
+            <div>
+              <span style={{ color: 'var(--color-mute)' }}>Partner:</span>{' '}
+              {prov ? (
+                <span style={{ fontWeight: 500 }}>{prov.full_name}</span>
+              ) : (
+                <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Unassigned</span>
+              )}
+            </div>
+          </div>
+        );
+      }
     },
     {
-      Header: 'Active',
-      accessor: 'active',
-      Cell: ({ value }: any) => value ? <Tag color="success">Yes</Tag> : <Tag color="error">No</Tag>
+      Header: 'Pricing & Status',
+      id: 'pricing_status',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+            <div><span style={{ color: 'var(--color-mute)' }}>Price:</span> <strong style={{ color: 'var(--color-ink)' }}>₹{record.price.toLocaleString()}</strong></div>
+            {record.strikePrice ? (
+              <div><span style={{ color: 'var(--color-mute)' }}>Strike Price:</span> <span style={{ textDecoration: 'line-through', color: 'var(--color-mute)' }}>₹{record.strikePrice.toLocaleString()}</span></div>
+            ) : null}
+            <div>
+              <span style={{ color: 'var(--color-mute)' }}>Status:</span>{' '}
+              {record.active ? <Tag color="success" style={{ margin: 0 }}>Active</Tag> : <Tag color="error" style={{ margin: 0 }}>Inactive</Tag>}
+            </div>
+          </div>
+        );
+      }
     },
     {
       Header: 'Actions',
@@ -156,24 +168,26 @@ export const RateCardsTab: React.FC = () => {
         return (
           <Space size="small">
             <Button
-              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
-              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              className="action-btn action-btn-edit"
+              icon={<LuPencil size={15} />}
               onClick={() => handleOpenEditRateCard(record)}
               title="Edit Rate Card"
             />
-            <Popconfirm
-              title={`Are you sure you want to delete rate card '${record.name}'?`}
-              onConfirm={() => handleDeleteRateCard(record.id, record.name)}
-              okText="Yes"
-              cancelText="No"
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
-                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
-                title="Delete Rate Card"
-              />
-            </Popconfirm>
+            <Button
+              className="action-btn action-btn-delete"
+              icon={<LuTrash2 size={15} />}
+              title="Delete Rate Card"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Delete Rate Card',
+                  content: `Are you sure you want to delete rate card '${record.name}'?`,
+                  okText: 'Yes, Delete',
+                  okType: 'danger',
+                  cancelText: 'No',
+                  onOk: () => handleDeleteRateCard(record.id, record.name),
+                });
+              }}
+            />
           </Space>
         );
       }
@@ -208,12 +222,12 @@ export const RateCardsTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Rate Cards</p>
-          <h2 style={{ fontSize: '2.5rem', marginTop: '0.25rem' }}>Service Rate Management</h2>
+          <h2 className="text-3xl font-bold" style={{ marginTop: '0.25rem' }}>Service Rate Management</h2>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenAddRateCard}>
+        <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddRateCard} className="w-full sm:w-auto">
           Create Rate Card
         </Button>
       </div>

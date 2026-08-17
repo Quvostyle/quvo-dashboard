@@ -289,3 +289,21 @@
 .toast.error {
   border-left-color: var(--color-wine);
 }
+
+@media (max-width: 992px) {
+  .dashboard-content-area {
+    padding: 1.25rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-content-area {
+    padding: 1rem !important;
+  }
+  .sidebar-logo h2 {
+    font-size: 1.3rem;
+  }
+  .sidebar-logo span {
+    font-size: 0.5rem;
+  }
+}

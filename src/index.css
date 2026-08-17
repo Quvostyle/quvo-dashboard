@@ -148,21 +148,74 @@ code {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 8px !important;
-  border: none !important;
-  box-shadow: none !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  border: 1px solid transparent !important;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
 
   &:hover {
-    opacity: 0.85;
     transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
   }
 
   &:active {
     transform: translateY(0);
+  }
+
+  & svg {
+    display: block;
+    stroke-width: 2.2px;
+  }
+
+  &.action-btn-edit {
+    background-color: #FFFDF0 !important;
+    color: #B8946A !important;
+    border: 1px solid rgba(184, 148, 106, 0.25) !important;
+
+    &:hover {
+      background-color: #FFF9D6 !important;
+      color: #9c7b53 !important;
+      border-color: rgba(184, 148, 106, 0.4) !important;
+    }
+  }
+
+  &.action-btn-delete {
+    background-color: #FFF0F2 !important;
+    color: #8B2E3B !important;
+    border: 1px solid rgba(139, 46, 59, 0.25) !important;
+
+    &:hover {
+      background-color: #FFE0E4 !important;
+      color: #70212b !important;
+      border-color: rgba(139, 46, 59, 0.4) !important;
+    }
+  }
+
+  &.action-btn-activate {
+    background-color: #F0FDF4 !important;
+    color: #4A5D3F !important;
+    border: 1px solid rgba(74, 93, 63, 0.25) !important;
+
+    &:hover {
+      background-color: #DCFCE7 !important;
+      color: #3b4b32 !important;
+      border-color: rgba(74, 93, 63, 0.4) !important;
+    }
+  }
+
+  &.action-btn-view {
+    background-color: #FFF5EC !important;
+    color: #7F6D5E !important;
+    border: 1px solid rgba(127, 109, 94, 0.25) !important;
+
+    &:hover {
+      background-color: #FFE6D1 !important;
+      color: #66574a !important;
+      border-color: rgba(127, 109, 94, 0.4) !important;
+    }
   }
 }

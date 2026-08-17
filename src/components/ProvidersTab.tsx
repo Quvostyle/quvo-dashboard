@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Input, Select, Space, Tag, Popconfirm, Form, message, Avatar, Skeleton } from 'antd';
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
+import { Button, Input, Select, Space, Tag, Modal, Form, message, Avatar, Skeleton } from 'antd';
+import { LuPlus, LuSearch, LuPencil, LuTrash2, LuMail, LuPhone, LuHouse } from 'react-icons/lu';
 import type { Provider } from '../services/dataService';
 import {
   useGetProvidersQuery,
@@ -95,10 +95,18 @@ export const ProvidersTab: React.FC = () => {
 
   const columns = useMemo(() => [
     {
-      Header: 'Name',
-      accessor: 'full_name',
-      Cell: ({ value, row }: any) => {
+      Header: 'Partner Profile',
+      id: 'partner_profile',
+      Cell: ({ row }: any) => {
         const record = row.original;
+        const birthDateStr = record.birth_date
+          ? new Date(record.birth_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+          : '—';
+        const genderColors: Record<string, string> = {
+          male: 'blue',
+          female: 'magenta',
+          other: 'purple'
+        };
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Avatar
@@ -110,75 +118,59 @@ export const ProvidersTab: React.FC = () => {
               }}
               size={40}
             >
-              {value ? value.charAt(0).toUpperCase() : 'P'}
+              {record.full_name ? record.full_name.charAt(0).toUpperCase() : 'P'}
             </Avatar>
             <div>
               <a
                 href={`#provider-profile-${record.id}`}
                 style={{
                   display: 'block',
-                  fontSize: '1rem',
+                  fontSize: '0.95rem',
                   fontWeight: 600,
                   color: 'var(--color-gold)',
                   textDecoration: 'none'
                 }}
               >
-                {value}
+                {record.full_name}
               </a>
-              <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)', fontFamily: 'monospace' }}>ID: {record.id.slice(0, 8)}</span>
+              <div style={{ fontSize: '0.72rem', color: 'var(--color-mute)', marginTop: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span>ID: {record.id.slice(0, 8)}</span>
+                <span>•</span>
+                <Tag color={genderColors[record.gender] || 'default'} style={{ textTransform: 'capitalize', borderRadius: '10px', padding: '0 6px', fontSize: '0.68rem', lineHeight: '1.2', margin: 0 }}>
+                  {record.gender}
+                </Tag>
+                <span>•</span>
+                <span>🎂 {birthDateStr}</span>
+              </div>
             </div>
           </div>
         );
       }
     },
     {
-      Header: 'Email',
-      accessor: 'email',
-      Cell: ({ value }: any) => (
-        <a href={`mailto:${value}`} style={{ color: 'var(--color-gold)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', textDecoration: 'none' }}>
-          <MailOutlined style={{ fontSize: '12px' }} /> {value}
-        </a>
-      )
-    },
-    {
-      Header: 'Mobile',
-      accessor: 'mobile',
-      Cell: ({ value }: any) => (
-        <a href={`tel:${value}`} style={{ fontSize: '0.85rem', color: 'var(--color-gold)', display: 'flex', alignItems: 'center', gap: '0.35rem', textDecoration: 'none' }}>
-          <PhoneOutlined style={{ fontSize: '12px' }} /> {value}
-        </a>
-      )
-    },
-    {
-      Header: 'Gender',
-      accessor: 'gender',
-      Cell: ({ value }: any) => {
-        const colors: Record<string, string> = {
-          male: 'blue',
-          female: 'magenta',
-          other: 'purple'
-        };
-        return <Tag color={colors[value] || 'default'} style={{ textTransform: 'capitalize', borderRadius: '12px', padding: '0 8px' }}>{value}</Tag>;
+      Header: 'Contact Info',
+      id: 'contact_info',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+            <div>
+              <a href={`mailto:${record.email}`} style={{ color: 'var(--color-gold)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', textDecoration: 'none' }}>
+                <LuMail size={12} /> {record.email}
+              </a>
+            </div>
+            <div>
+              <a href={`tel:${record.mobile}`} style={{ color: 'var(--color-gold)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', textDecoration: 'none' }}>
+                <LuPhone size={12} /> {record.mobile}
+              </a>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', color: 'var(--color-mute)', maxWidth: '240px' }}>
+              <LuHouse size={12} style={{ marginTop: '3px', flexShrink: 0 }} />
+              <span style={{ fontSize: '0.8rem', lineHeight: '1.2' }} title={record.address}>{record.address}</span>
+            </div>
+          </div>
+        );
       }
-    },
-    {
-      Header: 'Birth Date',
-      accessor: 'birth_date',
-      Cell: ({ value }: any) => {
-        if (!value) return '—';
-        const d = new Date(value);
-        return <span style={{ fontSize: '0.85rem' }}>{d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>;
-      }
-    },
-    {
-      Header: 'Address',
-      accessor: 'address',
-      Cell: ({ value }: any) => (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', maxWidth: '180px' }}>
-          <HomeOutlined style={{ fontSize: '12px', color: 'var(--color-mute)', marginTop: '3px' }} />
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', lineHeight: '1.2' }} title={value}>{value}</span>
-        </div>
-      )
     },
     {
       Header: 'Status',
@@ -206,24 +198,26 @@ export const ProvidersTab: React.FC = () => {
         return (
           <Space size="small">
             <Button
-              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
-              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              className="action-btn action-btn-edit"
+              icon={<LuPencil size={15} />}
               onClick={() => handleOpenEditProvider(record)}
               title="Edit Provider"
             />
-            <Popconfirm
-              title={`Are you sure you want to deactivate provider '${record.full_name}'?`}
-              onConfirm={() => handleDeleteProvider(record.id, record.full_name)}
-              okText="Yes"
-              cancelText="No"
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
-                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
-                title="Deactivate Provider"
-              />
-            </Popconfirm>
+            <Button
+              className="action-btn action-btn-delete"
+              icon={<LuTrash2 size={15} />}
+              title="Deactivate Provider"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Deactivate Provider',
+                  content: `Are you sure you want to deactivate provider '${record.full_name}'?`,
+                  okText: 'Yes, Deactivate',
+                  okType: 'danger',
+                  cancelText: 'No',
+                  onOk: () => handleDeleteProvider(record.id, record.full_name),
+                });
+              }}
+            />
           </Space>
         );
       }
@@ -258,15 +252,16 @@ export const ProvidersTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Providers Directory</p>
-          <h2 style={{ fontSize: '2.5rem', marginTop: '0.25rem' }}>Admin Service Providers</h2>
+          <h2 className="text-3xl font-bold" style={{ marginTop: '0.25rem' }}>Admin Service Providers</h2>
         </div>
         <Button
           type="primary"
-          icon={<PlusOutlined />}
+          icon={<LuPlus size={16} />}
           onClick={handleOpenAddProvider}
+          className="w-full sm:w-auto"
         >
           Add Provider
         </Button>
@@ -274,33 +269,31 @@ export const ProvidersTab: React.FC = () => {
 
       {/* Filter panel designed like Screenshot 1 */}
       <div
+        className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-white border rounded mb-6 shadow-sm"
         style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           backgroundColor: '#FFF',
           padding: '1rem 1.5rem',
-          border: '1px solid var(--color-line)',
+          borderColor: 'var(--color-line)',
           borderRadius: '4px',
-          marginBottom: '1.5rem',
           boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           <strong style={{ fontSize: '1rem', color: 'var(--color-ink)' }}>Search:</strong>
           <Input
             placeholder="Search provider..."
-            prefix={<SearchOutlined style={{ color: 'var(--color-mute)' }} />}
+            prefix={<LuSearch size={15} style={{ color: 'var(--color-mute)' }} />}
             value={providerSearch}
             onChange={(e) => {
               setProviderSearch(e.target.value);
             }}
-            style={{ width: '220px', height: '38px', borderRadius: '4px' }}
+            className="w-full sm:w-[220px]"
+            style={{ height: '38px', borderRadius: '4px' }}
           />
           <Select
             defaultValue="all"
-            style={{ width: '130px', height: '38px' }}
+            className="w-full sm:w-[130px]"
+            style={{ height: '38px' }}
             onChange={value => {
               setProviderGenderFilter(value);
             }}
