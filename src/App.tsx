@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Layout,
   Menu,
   ConfigProvider,
   message,
   Card,
-  Form,
   Input,
   Button
 } from 'antd';
@@ -19,6 +18,8 @@ import {
   MailOutlined,
   LockOutlined
 } from '@ant-design/icons';
+import { useForm, Controller } from 'react-hook-form';
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import { useGetOrdersQuery } from './store/apiSlice';
 
@@ -33,15 +34,144 @@ import { RateCardsTab } from './components/RateCardsTab';
 import { OrderDetailsModal } from './components/OrderDetailsModal';
 import type { IntakeRequest } from './services/dataService';
 
-const { Sider, Content } = Layout;
+const { Sider, Content, Header } = Layout;
+
+const tabTitles: Record<string, string> = {
+  overview: 'Studio Overview',
+  orders: 'Intake Queue',
+  categories: 'Taxonomy System',
+  providers: 'Stylist Partners',
+  ratecards: 'Service Rates'
+};
+
+const DashboardRoutes: React.FC<{
+  pendingOrdersCount: number;
+  handleLogout: () => void;
+  handleOpenOrderDetails: (order: IntakeRequest) => void;
+  showOrderModal: boolean;
+  selectedOrder: IntakeRequest | null;
+  setShowOrderModal: (show: boolean) => void;
+  setSelectedOrder: (order: IntakeRequest | null) => void;
+}> = ({
+  pendingOrdersCount,
+  handleLogout,
+  handleOpenOrderDetails,
+  showOrderModal,
+  selectedOrder,
+  setShowOrderModal,
+  setSelectedOrder
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentKey = location.pathname.replace('/', '') || 'overview';
+
+  return (
+    <Layout className="dashboard-layout min-h-screen">
+      {/* LEFT SIDEBAR NAVIGATION */}
+      <Sider
+        width={260}
+        breakpoint="lg"
+        collapsedWidth="0"
+        className="dashboard-sidebar"
+      >
+        <div className="sidebar-logo">
+          <h2>Quvo</h2>
+          <span>Studio</span>
+        </div>
+
+        <Menu
+          mode="inline"
+          selectedKeys={[currentKey]}
+          onClick={({ key }) => navigate(`/${key}`)}
+          className="sidebar-menu"
+          items={[
+            { key: 'overview', icon: <DashboardOutlined />, label: 'Overview' },
+            { key: 'orders', icon: <ShoppingOutlined />, label: `Orders (${pendingOrdersCount} pend)` },
+            { key: 'categories', icon: <FolderOutlined />, label: 'Categories' },
+            { key: 'providers', icon: <UserOutlined />, label: 'Providers' },
+            { key: 'ratecards', icon: <CreditCardOutlined />, label: 'Rate Cards' }
+          ]}
+        />
+
+        <div className="sidebar-user">
+          <div className="user-info">
+            <span className="name">Admin User</span>
+            <span className="role">Senior Producer</span>
+          </div>
+          <div className="logout-btn" title="Log Out" onClick={handleLogout}>
+            <LogoutOutlined style={{ fontSize: '16px' }} />
+          </div>
+        </div>
+      </Sider>
+
+      {/* RIGHT SIDE: HEADER + CONTENT */}
+      <Layout style={{ background: 'transparent' }}>
+        <Header
+          style={{
+            background: 'var(--color-bone)',
+            borderBottom: '1px solid var(--color-line)',
+            padding: '0 2.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '70px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-ink)', textTransform: 'capitalize' }}>
+              {tabTitles[currentKey] || 'Workspace'}
+            </h3>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span className="label-overline" style={{ fontSize: '0.65rem', border: '1px solid var(--color-line)', padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'var(--color-paper)' }}>
+              Production Env
+            </span>
+          </div>
+        </Header>
+
+        {/* CONTENT AREA */}
+        <Content className="dashboard-content-area animate-fade-in">
+          <Routes>
+            <Route
+              path="/overview"
+              element={
+                <OverviewTab
+                  onViewAllQueue={() => navigate('/orders')}
+                  onManageRequest={handleOpenOrderDetails}
+                />
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <OrdersTab
+                  onManageRequest={handleOpenOrderDetails}
+                />
+              }
+            />
+            <Route path="/categories" element={<CategoriesTab />} />
+            <Route path="/providers" element={<ProvidersTab />} />
+            <Route path="/ratecards" element={<RateCardsTab />} />
+            <Route path="*" element={<Navigate to="/overview" replace />} />
+          </Routes>
+        </Content>
+      </Layout>
+
+      {/* ================= SHARED DETAILS MODAL ================= */}
+      <OrderDetailsModal
+        visible={showOrderModal}
+        selectedOrder={selectedOrder}
+        onCancel={() => setShowOrderModal(false)}
+        onOrderUpdated={(updated) => setSelectedOrder(updated)}
+      />
+    </Layout>
+  );
+};
 
 function App() {
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
-
-  // Navigation
-  const [activeTab, setActiveTab] = useState<string>('overview');
 
   // Shared Modal State
   const [selectedOrder, setSelectedOrder] = useState<IntakeRequest | null>(null);
@@ -51,8 +181,17 @@ function App() {
   const { data: orders = [] } = useGetOrdersQuery(undefined, { skip: !isAuthenticated });
   const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
 
-  // Login Form
-  const [loginForm] = Form.useForm();
+  // Login Form using react-hook-form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  });
 
   useEffect(() => {
     const authSession = localStorage.getItem('quvo_admin_auth');
@@ -92,16 +231,15 @@ function App() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#3A2E24',
-          colorBgBase: '#FAF8F3',
-          colorTextBase: '#3A2E24',
-          borderRadius: 0,
+          colorPrimary: '#B8946A',
+          colorBgBase: '#ffffff',
+          colorTextBase: '#1f2937',
+          borderRadius: 6,
           fontFamily: "'Outfit', sans-serif",
         },
       }}
     >
       <div className="app-container grain">
-
         {/* LOGIN SCREEN */}
         {!isAuthenticated ? (
           <div className="login-container">
@@ -111,120 +249,79 @@ function App() {
                 <p>Studio Admin Access</p>
               </div>
 
-              <Form
-                name="login-form"
-                form={loginForm}
-                layout="vertical"
-                onFinish={handleLogin}
-                requiredMark={false}
+              <form
+                onSubmit={handleSubmit(handleLogin)}
+                className="space-y-4"
               >
-                <Form.Item
-                  name="email"
-                  label="Administrative Email"
-                  rules={[{ required: true, message: 'Please input admin email.' }, { type: 'email', message: 'Input valid email.' }]}
-                >
-                  <Input prefix={<MailOutlined style={{ color: 'var(--color-mute)' }} />} placeholder="e.g. admin@quvo.in" />
-                </Form.Item>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Administrative Email
+                  </label>
+                  <Controller
+                    name="email"
+                    control={control}
+                    rules={{
+                      required: 'Please input admin email.',
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: 'Input valid email.'
+                      }
+                    }}
+                    render={({ field }) => (
+                      <Input {...field} prefix={<MailOutlined style={{ color: 'var(--color-mute)' }} />} placeholder="e.g. admin@quvo.in" />
+                    )}
+                  />
+                  {errors.email && (
+                    <span className="text-red-500 text-sm block mt-1">
+                      {errors.email.message}
+                    </span>
+                  )}
+                </div>
 
-                <Form.Item
-                  name="password"
-                  label="Administrative Password"
-                  rules={[{ required: true, message: 'Please input admin password.' }]}
-                  extra="Tip: Try admin@quvo.in / admin123"
-                >
-                  <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-mute)' }} />} placeholder="Enter password" />
-                </Form.Item>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Administrative Password
+                  </label>
+                  <Controller
+                    name="password"
+                    control={control}
+                    rules={{ required: 'Please input admin password.' }}
+                    render={({ field }) => (
+                      <Input.Password {...field} prefix={<LockOutlined style={{ color: 'var(--color-mute)' }} />} placeholder="Enter password" />
+                    )}
+                  />
+                  {errors.password && (
+                    <span className="text-red-500 text-sm block mt-1">
+                      {errors.password.message}
+                    </span>
+                  )}
+                  <span className="text-gray-500 text-xs block mt-1">
+                    Tip: Try admin@quvo.in / admin123
+                  </span>
+                </div>
 
-                <Form.Item style={{ marginTop: '1.5rem', marginBottom: 0 }}>
+                <div className="pt-2">
                   <Button type="primary" htmlType="submit" block style={{ height: '42px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                     Enter Studio
                   </Button>
-                </Form.Item>
-              </Form>
+                </div>
+              </form>
             </Card>
           </div>
         ) : (
-
-          /* AUTHENTICATED DASHBOARD LAYOUT */
-          <Layout className="dashboard-layout">
-
-            {/* LEFT SIDEBAR NAVIGATION */}
-            <Sider
-              width={260}
-              breakpoint="lg"
-              collapsedWidth="0"
-              className="dashboard-sidebar"
-            >
-              <div className="sidebar-logo">
-                <h2>Quvo</h2>
-                <span>Studio</span>
-              </div>
-
-              <Menu
-                mode="inline"
-                selectedKeys={[activeTab]}
-                onClick={({ key }) => setActiveTab(key)}
-                className="sidebar-menu"
-                items={[
-                  { key: 'overview', icon: <DashboardOutlined />, label: 'Overview' },
-                  { key: 'orders', icon: <ShoppingOutlined />, label: `Orders (${pendingOrdersCount} pend)` },
-                  { key: 'categories', icon: <FolderOutlined />, label: 'Categories' },
-                  { key: 'providers', icon: <UserOutlined />, label: 'Providers' },
-                  { key: 'ratecards', icon: <CreditCardOutlined />, label: 'Rate Cards' }
-                ]}
-              />
-
-              <div className="sidebar-user">
-                <div className="user-info">
-                  <span className="name">Admin User</span>
-                  <span className="role">Senior Producer</span>
-                </div>
-                <div className="logout-btn" title="Log Out" onClick={handleLogout}>
-                  <LogoutOutlined style={{ fontSize: '16px' }} />
-                </div>
-              </div>
-            </Sider>
-
-            {/* CONTENT AREA */}
-            <Content className="dashboard-content-area animate-fade-in">
-              <>
-                {activeTab === 'overview' && (
-                  <OverviewTab
-                    onViewAllQueue={() => setActiveTab('orders')}
-                    onManageRequest={handleOpenOrderDetails}
-                  />
-                )}
-
-                {activeTab === 'orders' && (
-                  <OrdersTab
-                    onManageRequest={handleOpenOrderDetails}
-                  />
-                )}
-
-                {activeTab === 'categories' && (
-                  <CategoriesTab />
-                )}
-
-                {activeTab === 'providers' && (
-                  <ProvidersTab />
-                )}
-
-                {activeTab === 'ratecards' && (
-                  <RateCardsTab />
-                )}
-              </>
-            </Content>
-          </Layout>
+          <HashRouter>
+            <DashboardRoutes
+              pendingOrdersCount={pendingOrdersCount}
+              handleLogout={handleLogout}
+              handleOpenOrderDetails={handleOpenOrderDetails}
+              showOrderModal={showOrderModal}
+              selectedOrder={selectedOrder}
+              setShowOrderModal={setShowOrderModal}
+              setSelectedOrder={setSelectedOrder}
+            />
+          </HashRouter>
         )}
       </div>
-
-      {/* ================= SHARED DETAILS MODAL ================= */}
-      <OrderDetailsModal
-        visible={showOrderModal}
-        selectedOrder={selectedOrder}
-        onCancel={() => setShowOrderModal(false)}
-        onOrderUpdated={(updated) => setSelectedOrder(updated)}
-      />
     </ConfigProvider>
   );
 }

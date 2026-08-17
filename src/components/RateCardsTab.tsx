@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Table, Button, Input, Space, Tag, Popconfirm, Form, message, Spin } from 'antd';
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState, useMemo } from 'react';
+import { Button, Space, Tag, Popconfirm, Form, message, Skeleton } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { RateCard } from '../services/dataService';
 import {
   useGetRateCardsQuery,
@@ -11,6 +11,7 @@ import {
   useDeleteRateCardMutation
 } from '../store/apiSlice';
 import { RateCardModal } from './RateCardModal';
+import { Table } from './common/Table';
 
 export const RateCardsTab: React.FC = () => {
   const { data: rateCards = [], isLoading: rateCardsLoading } = useGetRateCardsQuery();
@@ -20,8 +21,6 @@ export const RateCardsTab: React.FC = () => {
   const [addRateCard] = useAddRateCardMutation();
   const [updateRateCard] = useUpdateRateCardMutation();
   const [deleteRateCard] = useDeleteRateCardMutation();
-
-  const [rateCardSearch, setRateCardSearch] = useState('');
 
   // Rate Card Modal State (Add/Edit)
   const [showRateCardModal, setShowRateCardModal] = useState(false);
@@ -58,29 +57,16 @@ export const RateCardsTab: React.FC = () => {
   };
 
   const handleSaveRateCard = async (values: any) => {
-    const cardData = {
-      name: values.name,
-      categoryId: values.categoryId,
-      subcategoryId: values.subcategoryId,
-      providerId: values.providerId,
-      price: values.price,
-      strikePrice: values.strikePrice,
-      weight: values.weight,
-      recommended: !!values.recommended,
-      bestDeal: !!values.bestDeal,
-      active: !!values.active,
-      serviceType: values.serviceType,
-      images: values.images || [],
-      videos: values.videos || []
-    };
-
     try {
       if (editingRateCardId) {
-        await updateRateCard({ id: editingRateCardId, ...cardData }).unwrap();
-        message.success(`Rate Card '${values.name}' updated.`);
+        await updateRateCard({
+          id: editingRateCardId,
+          ...values
+        }).unwrap();
+        message.success('Rate card updated successfully.');
       } else {
-        await addRateCard(cardData).unwrap();
-        message.success(`Rate Card '${values.name}' created.`);
+        await addRateCard(values).unwrap();
+        message.success('Rate card created successfully.');
       }
       setShowRateCardModal(false);
     } catch (e: any) {
@@ -91,24 +77,134 @@ export const RateCardsTab: React.FC = () => {
   const handleDeleteRateCard = async (id: string, name: string) => {
     try {
       await deleteRateCard(id).unwrap();
-      message.info(`Rate card '${name}' deleted.`);
+      message.info(`Deleted rate card '${name}'.`);
     } catch (e: any) {
-      message.error(e.data || e.message || 'Error deleting rate card');
+      message.error(e.data || e.message || 'Error deleting item');
     }
   };
 
+
+
+  const columns = useMemo(() => [
+    {
+      Header: 'Name',
+      accessor: 'name',
+      Cell: ({ value }: any) => <strong>{value}</strong>
+    },
+    {
+      Header: 'Category',
+      accessor: 'categoryId',
+      Cell: ({ value }: any) => {
+        const parent = categories.find(c => c.id === value);
+        return parent ? <Tag color="blue">{parent.name}</Tag> : <span style={{ color: 'var(--color-mute)' }}>—</span>;
+      }
+    },
+    {
+      Header: 'Subcategory',
+      accessor: 'subcategoryId',
+      Cell: ({ value }: any) => {
+        const sub = categories.find(c => c.id === value);
+        return sub ? <Tag color="cyan">{sub.name}</Tag> : <span style={{ color: 'var(--color-mute)' }}>—</span>;
+      }
+    },
+    {
+      Header: 'Provider Partner',
+      accessor: 'providerId',
+      Cell: ({ value }: any) => {
+        const prov = providers.find(p => p.id === value);
+        return prov ? <span>{prov.full_name}</span> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Unassigned</span>;
+      }
+    },
+    {
+      Header: 'Price (INR)',
+      accessor: 'price',
+      Cell: ({ value }: any) => <strong>₹{value.toLocaleString()}</strong>
+    },
+    {
+      Header: 'Strike Price',
+      accessor: 'strikePrice',
+      Cell: ({ value }: any) => <span style={{ textDecoration: 'line-through', color: 'var(--color-mute)' }}>₹{value.toLocaleString()}</span>
+    },
+    {
+      Header: 'Badges',
+      id: 'badges',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <Space size="small">
+            {record.recommended && <Tag color="gold">Recommended</Tag>}
+            {record.bestDeal && <Tag color="purple">Best Deal</Tag>}
+          </Space>
+        );
+      }
+    },
+    {
+      Header: 'Type',
+      accessor: 'serviceType',
+      Cell: ({ value }: any) => <span style={{ textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600 }}>{value}</span>
+    },
+    {
+      Header: 'Active',
+      accessor: 'active',
+      Cell: ({ value }: any) => value ? <Tag color="success">Yes</Tag> : <Tag color="error">No</Tag>
+    },
+    {
+      Header: 'Actions',
+      id: 'actions',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <Space size="small">
+            <Button
+              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
+              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              onClick={() => handleOpenEditRateCard(record)}
+              title="Edit Rate Card"
+            />
+            <Popconfirm
+              title={`Are you sure you want to delete rate card '${record.name}'?`}
+              onConfirm={() => handleDeleteRateCard(record.id, record.name)}
+              okText="Yes"
+              cancelText="No"
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
+                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
+                title="Delete Rate Card"
+              />
+            </Popconfirm>
+          </Space>
+        );
+      }
+    }
+  ], [categories, providers]);
+
   if (rateCardsLoading || categoriesLoading || providersLoading) {
     return (
-      <div style={{ minHeight: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-        <Spin size="large" />
-        <span className="label-overline">Fetching Rate Cards...</span>
+      <div className="animate-fade-in">
+        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <div>
+            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <br />
+            <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+          </div>
+          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+        </div>
+
+        {/* Table Page Skeleton */}
+        <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
+          {/* Mock Search/Filter Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
+            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          </div>
+          {/* Mock Table Rows */}
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
       </div>
     );
   }
-
-  const filteredRateCards = rateCards.filter((rc) => {
-    return rc.name.toLowerCase().includes(rateCardSearch.toLowerCase());
-  });
 
   return (
     <div className="animate-fade-up">
@@ -122,110 +218,11 @@ export const RateCardsTab: React.FC = () => {
         </Button>
       </div>
 
-      {/* Filter panel */}
-      <div className="management-row" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <Input
-          placeholder="Search rate cards by name..."
-          prefix={<SearchOutlined />}
-          value={rateCardSearch}
-          onChange={(e) => setRateCardSearch(e.target.value)}
-          style={{ maxWidth: '350px', height: '38px' }}
-        />
-      </div>
-
       {/* Rate Cards Table */}
       <Table
-        rowKey="id"
-        dataSource={filteredRateCards}
-        pagination={{ pageSize: 8 }}
-        className="premium-table"
-        columns={[
-          {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text) => <strong>{text}</strong>
-          },
-          {
-            title: 'Category',
-            dataIndex: 'categoryId',
-            key: 'category',
-            render: (catId) => {
-              const parent = categories.find(c => c.id === catId);
-              return parent ? <Tag color="blue">{parent.name}</Tag> : <span style={{ color: 'var(--color-mute)' }}>—</span>;
-            }
-          },
-          {
-            title: 'Subcategory',
-            dataIndex: 'subcategoryId',
-            key: 'subcategory',
-            render: (subId) => {
-              const sub = categories.find(c => c.id === subId);
-              return sub ? <Tag color="cyan">{sub.name}</Tag> : <span style={{ color: 'var(--color-mute)' }}>—</span>;
-            }
-          },
-          {
-            title: 'Provider Partner',
-            dataIndex: 'providerId',
-            key: 'provider',
-            render: (provId) => {
-              const prov = providers.find(p => p.id === provId);
-              return prov ? <span>{prov.full_name}</span> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Unassigned</span>;
-            }
-          },
-          {
-            title: 'Price (INR)',
-            dataIndex: 'price',
-            key: 'price',
-            render: (price) => <strong>₹{price.toLocaleString()}</strong>
-          },
-          {
-            title: 'Strike Price',
-            dataIndex: 'strikePrice',
-            key: 'strikePrice',
-            render: (price) => <span style={{ textDecoration: 'line-through', color: 'var(--color-mute)' }}>₹{price.toLocaleString()}</span>
-          },
-          {
-            title: 'Badges',
-            key: 'badges',
-            render: (_, record) => (
-              <Space size="small">
-                {record.recommended && <Tag color="gold">Recommended</Tag>}
-                {record.bestDeal && <Tag color="purple">Best Deal</Tag>}
-              </Space>
-            )
-          },
-          {
-            title: 'Type',
-            dataIndex: 'serviceType',
-            key: 'type',
-            render: (val) => <span style={{ textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600 }}>{val}</span>
-          },
-          {
-            title: 'Active',
-            dataIndex: 'active',
-            key: 'active',
-            render: (val) => val ? <Tag color="success">Yes</Tag> : <Tag color="error">No</Tag>
-          },
-          {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-              <Space>
-                <Button icon={<EditOutlined />} size="small" onClick={() => handleOpenEditRateCard(record)}>Edit</Button>
-                <Popconfirm
-                  title={`Are you sure you want to delete rate card '${record.name}'?`}
-                  onConfirm={() => handleDeleteRateCard(record.id, record.name)}
-                  okText="Yes"
-                  cancelText="No"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Button danger icon={<DeleteOutlined />} size="small">Delete</Button>
-                </Popconfirm>
-              </Space>
-            )
-          }
-        ]}
+        columns={columns}
+        data={rateCards}
+        pageSize={8}
       />
 
       <RateCardModal
