@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, Row, Col, Statistic, List, Button, Space, Skeleton } from 'antd';
 import {
-  ShoppingOutlined,
-  InfoCircleOutlined,
-  FolderOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+  LuShoppingBag,
+  LuInfo,
+  LuFolder,
+  LuUser
+} from 'react-icons/lu';
 import type { IntakeRequest } from '../services/dataService';
 import { useGetCategoriesQuery, useGetProvidersQuery, useGetOrdersQuery } from '../store/apiSlice';
 
@@ -93,7 +93,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
             <div className="kpi-card-inner">
               <Statistic title={<span className="label-overline">Total Orders</span>} value={totalOrders} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem' }} />
-              <div className="kpi-icon cocoa"><ShoppingOutlined style={{ fontSize: '20px' }} /></div>
+              <div className="kpi-icon cocoa"><LuShoppingBag size={20} /></div>
             </div>
           </Card>
         </Col>
@@ -101,7 +101,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
             <div className="kpi-card-inner">
               <Statistic title={<span className="label-overline">Pending Review</span>} value={pendingOrders} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', color: pendingOrders > 0 ? 'var(--color-wine)' : 'inherit' }} />
-              <div className="kpi-icon wine"><InfoCircleOutlined style={{ fontSize: '20px' }} /></div>
+              <div className="kpi-icon wine"><LuInfo size={20} /></div>
             </div>
           </Card>
         </Col>
@@ -109,7 +109,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
             <div className="kpi-card-inner">
               <Statistic title={<span className="label-overline">Stylist Partner Directory</span>} value={totalProviders} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem' }} />
-              <div className="kpi-icon gold"><UserOutlined style={{ fontSize: '20px' }} /></div>
+              <div className="kpi-icon gold"><LuUser size={20} /></div>
             </div>
           </Card>
         </Col>
@@ -117,7 +117,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
             <div className="kpi-card-inner">
               <Statistic title={<span className="label-overline">Active Categories</span>} value={activeCategoriesCount} suffix={`/ ${categories.length}`} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem' }} />
-              <div className="kpi-icon moss"><FolderOutlined style={{ fontSize: '20px' }} /></div>
+              <div className="kpi-icon moss"><LuFolder size={20} /></div>
             </div>
           </Card>
         </Col>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Space, Tag, Popconfirm, Form, message, Skeleton } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, Modal, Form, message, Skeleton } from 'antd';
+import { LuPlus, LuPencil, LuTrash2, LuCircleCheck, LuBan } from 'react-icons/lu';
 import type { Category } from '../services/dataService';
 import {
   useGetCategoriesQuery,
@@ -94,35 +94,49 @@ export const SubcategoriesTab: React.FC = () => {
 
   const columns = useMemo(() => [
     {
-      Header: 'Name',
-      accessor: 'name',
-      Cell: ({ value, row }: any) => (
-        <strong style={{ color: row.original.isActive ? 'inherit' : 'var(--color-mute)', textDecoration: row.original.isActive ? 'none' : 'line-through' }}>
-          {value}
-        </strong>
-      )
-    },
-    {
-      Header: 'Parent Group',
-      accessor: 'parentId',
-      Cell: ({ value }: any) => {
-        const parent = categories.find(c => c.id === value);
-        return parent ? <Tag color="orange">{parent.name}</Tag> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Orphaned</span>;
+      Header: 'Subcategory Details',
+      id: 'subcategory_details',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        const parent = categories.find(c => c.id === record.parentId);
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+            <strong style={{
+              fontSize: '0.95rem',
+              color: record.isActive ? 'var(--color-ink)' : 'var(--color-mute)',
+              textDecoration: record.isActive ? 'none' : 'line-through'
+            }}>
+              {record.name}
+            </strong>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>Parent:</span>
+              {parent ? <Tag color="orange" style={{ margin: 0, fontSize: '0.68rem', lineHeight: '1.2' }}>{parent.name}</Tag> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Orphaned</span>}
+              <span>•</span>
+              <span>Order: {record.sortOrder}</span>
+            </div>
+            {record.description && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', fontStyle: 'italic', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={record.description}>
+                {record.description}
+              </span>
+            )}
+          </div>
+        );
       }
     },
     {
-      Header: 'Slug',
-      accessor: 'slug',
-      Cell: ({ value }: any) => <Tag color="cyan">{value}</Tag>
-    },
-    {
-      Header: 'Description',
-      accessor: 'description',
-      Cell: ({ value }: any) => value || <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>None</span>
-    },
-    {
-      Header: 'Sort Order',
-      accessor: 'sortOrder'
+      Header: 'Slug & Media',
+      id: 'slug_media',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+            <div><Tag color="cyan" style={{ fontFamily: 'monospace', margin: 0 }}>{record.slug}</Tag></div>
+            {record.videos?.length > 0 ? (
+              <div style={{ fontSize: '0.72rem', color: 'var(--color-mute)' }}>🎥 {record.videos.length} Videos</div>
+            ) : null}
+          </div>
+        );
+      }
     },
     {
       Header: 'Status',
@@ -137,30 +151,42 @@ export const SubcategoriesTab: React.FC = () => {
         return (
           <Space size="small">
             <Button
-              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
-              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              className="action-btn action-btn-edit"
+              icon={<LuPencil size={15} />}
               onClick={() => handleSelectSubcategoryForEdit(record)}
               title="Edit"
             />
             <Button
-              className={record.isActive ? "action-btn bg-wine/8 text-wine hover:bg-wine/15" : "action-btn bg-gold/8 text-gold hover:bg-gold/15"}
-              icon={record.isActive ? <StopOutlined style={{ fontSize: '15px' }} /> : <CheckCircleOutlined style={{ fontSize: '15px' }} />}
-              onClick={() => handleToggleSubcategoryActive(record.id, record.isActive, record.name)}
+              className={record.isActive ? "action-btn action-btn-delete" : "action-btn action-btn-activate"}
+              icon={record.isActive ? <LuBan size={15} /> : <LuCircleCheck size={15} />}
+              onClick={() => {
+                const action = record.isActive ? 'deactivate' : 'activate';
+                Modal.confirm({
+                  title: `${record.isActive ? 'Deactivate' : 'Activate'} Subcategory`,
+                  content: `Are you sure you want to ${action} subcategory '${record.name}'?`,
+                  okText: record.isActive ? 'Yes, Deactivate' : 'Yes, Activate',
+                  okType: record.isActive ? 'danger' : 'primary',
+                  cancelText: 'No',
+                  onOk: () => handleToggleSubcategoryActive(record.id, record.isActive, record.name),
+                });
+              }}
               title={record.isActive ? "Deactivate" : "Activate"}
             />
-            <Popconfirm
-              title={`Are you sure you want to delete subcategory '${record.name}'?`}
-              onConfirm={() => handleDeleteSubcategory(record.id, record.name)}
-              okText="Yes"
-              cancelText="No"
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
-                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
-                title="Delete"
-              />
-            </Popconfirm>
+            <Button
+              className="action-btn action-btn-delete"
+              icon={<LuTrash2 size={15} />}
+              title="Delete"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Delete Subcategory',
+                  content: `Are you sure you want to delete subcategory '${record.name}'?`,
+                  okText: 'Yes, Delete',
+                  okType: 'danger',
+                  cancelText: 'No',
+                  onOk: () => handleDeleteSubcategory(record.id, record.name),
+                });
+              }}
+            />
           </Space>
         );
       }
@@ -195,12 +221,12 @@ export const SubcategoriesTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Taxonomy System</p>
-          <h2 style={{ fontSize: '2.5rem', marginTop: '0.25rem' }}>Subcategories</h2>
+          <h2 className="text-3xl font-bold" style={{ marginTop: '0.25rem' }}>Subcategories</h2>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenAddSubcategory}>
+        <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddSubcategory} className="w-full sm:w-auto">
           Add Subcategory
         </Button>
       </div>

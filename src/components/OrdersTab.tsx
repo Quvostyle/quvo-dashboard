@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button, Tag, Skeleton } from 'antd';
-import { FileTextOutlined } from '@ant-design/icons';
+import { LuFileText } from 'react-icons/lu';
 import type { IntakeRequest } from '../services/dataService';
 import { useGetOrdersQuery, useGetProvidersQuery } from '../store/apiSlice';
 import { Table } from './common/Table';
@@ -20,93 +20,83 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
   const columns = useMemo(() => [
     {
-      Header: 'ID',
-      accessor: 'id',
-      Cell: ({ value }: any) => <code>{value.slice(0, 8)}</code>
-    },
-    {
-      Header: 'Client Profiling',
-      accessor: 'user_name',
-      Cell: ({ value, row }: any) => {
+      Header: 'Client Profile & ID',
+      id: 'client_profile',
+      Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
             <a
               href={`#client-details-${record.id}`}
               style={{
                 display: 'block',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 fontWeight: 600,
                 color: 'var(--color-gold)',
                 textDecoration: 'none'
               }}
             >
-              {value}
+              {record.user_name}
             </a>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)' }}>
-              {record.user_email}
-            </span>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)' }}>
+              <code>{record.id.slice(0, 8)}</code> • {record.user_email}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--color-mute)' }}>
+              Gender: <span style={{ textTransform: 'capitalize', color: 'var(--color-ink)', fontWeight: 500 }}>{record.gender}</span> • Budget: <strong style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-serif)' }}>{record.budget}</strong>
+            </div>
           </div>
         );
       }
     },
     {
-      Header: 'Occasion Context',
-      accessor: 'occasion',
-      Cell: ({ value, row }: any) => {
+      Header: 'Occasion & Preference',
+      id: 'occasion_preference',
+      Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div>
-            <span style={{ display: 'block', fontWeight: 500 }}>{value}</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)' }}>
-              {record.location_preference}
-            </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.85rem' }}>
+            <div><span style={{ color: 'var(--color-mute)' }}>Occasion:</span> <strong style={{ color: 'var(--color-ink)' }}>{record.occasion}</strong></div>
+            <div><span style={{ color: 'var(--color-mute)' }}>Location:</span> <span style={{ color: 'var(--color-ink)' }}>{record.location_preference}</span></div>
           </div>
         );
       }
     },
     {
-      Header: 'Tier Budget',
-      accessor: 'budget',
-      Cell: ({ value }: any) => <strong style={{ fontFamily: 'var(--font-serif)' }}>{value}</strong>
-    },
-    {
-      Header: 'Demo',
-      accessor: 'gender',
-      Cell: ({ value }: any) => <span style={{ textTransform: 'capitalize' }}>{value}</span>
-    },
-    {
-      Header: 'Stylist Partner',
-      accessor: 'provider_id',
-      Cell: ({ value }: any) => {
-        const provider = providers.find((p) => p.id === value);
-        return provider ? (
-          <strong>{provider.full_name}</strong>
-        ) : (
-          <span style={{ color: 'var(--color-mute)', fontStyle: 'italic' }}>Unassigned</span>
-        );
-      }
-    },
-    {
-      Header: 'Status',
-      accessor: 'status',
-      Cell: ({ value }: any) => {
-        let color = 'default';
-        if (value === 'pending') color = 'warning';
-        if (value === 'assigned') color = 'processing';
-        if (value === 'completed') color = 'success';
+      Header: 'Assignment & Status',
+      id: 'assignment_status',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        const provider = providers.find((p) => p.id === record.provider_id);
+        let statusColor = 'default';
+        if (record.status === 'pending') statusColor = 'warning';
+        if (record.status === 'assigned') statusColor = 'processing';
+        if (record.status === 'completed') statusColor = 'success';
+
         return (
-          <Tag
-            color={color}
-            style={{
-              textTransform: 'uppercase',
-              fontSize: '0.7rem',
-              letterSpacing: '0.05em',
-              fontWeight: 600
-            }}
-          >
-            {value}
-          </Tag>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.85rem' }}>
+            <div>
+              <span style={{ color: 'var(--color-mute)' }}>Stylist:</span>{' '}
+              {provider ? (
+                <strong style={{ color: 'var(--color-ink)' }}>{provider.full_name}</strong>
+              ) : (
+                <span style={{ color: 'var(--color-mute)', fontStyle: 'italic' }}>Unassigned</span>
+              )}
+            </div>
+            <div>
+              <Tag
+                color={statusColor}
+                style={{
+                  textTransform: 'uppercase',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.05em',
+                  fontWeight: 600,
+                  margin: 0
+                }}
+              >
+                {record.status}
+              </Tag>
+            </div>
+          </div>
         );
       }
     },
@@ -117,8 +107,8 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         const record = row.original;
         return (
           <Button
-            className="action-btn bg-cocoa/8 text-cocoa hover:bg-cocoa/15"
-            icon={<FileTextOutlined style={{ fontSize: '15px' }} />}
+            className="action-btn action-btn-view"
+            icon={<LuFileText size={15} />}
             onClick={() => onManageRequest(record)}
             title="View Details"
           />

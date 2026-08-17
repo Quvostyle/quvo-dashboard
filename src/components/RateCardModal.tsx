@@ -13,11 +13,11 @@ import {
   Divider,
 } from "antd";
 import {
-  UploadOutlined,
-  PlayCircleOutlined,
-  DeleteOutlined,
-  PictureOutlined,
-} from "@ant-design/icons";
+  LuUpload,
+  LuCirclePlay,
+  LuTrash2,
+  LuImage,
+} from "react-icons/lu";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { useGetRateCardsQuery } from "../store/apiSlice";
 import type { Category, Provider } from "../services/dataService";
@@ -474,13 +474,13 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                         }}
                         showUploadList={false}
                       >
-                        <Button icon={<UploadOutlined />} size="small">
+                        <Button icon={<LuUpload size={14} />} size="small">
                           Upload
                         </Button>
                       </Upload>
                       <Button
                         danger
-                        icon={<DeleteOutlined />}
+                        icon={<LuTrash2 size={14} />}
                         size="small"
                         onClick={() => removeImage(index)}
                       />
@@ -511,7 +511,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
               type="dashed"
               onClick={() => appendImage("")}
               block
-              icon={<PictureOutlined />}
+              icon={<LuImage size={16} />}
               size="large"
             >
               Add Image URL or File
@@ -559,13 +559,13 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                         }}
                         showUploadList={false}
                       >
-                        <Button icon={<UploadOutlined />} size="small">
+                        <Button icon={<LuUpload size={14} />} size="small">
                           Upload
                         </Button>
                       </Upload>
                       <Button
                         danger
-                        icon={<DeleteOutlined />}
+                        icon={<LuTrash2 size={14} />}
                         size="small"
                         onClick={() => removeVideo(index)}
                       />
@@ -594,7 +594,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
               type="dashed"
               onClick={() => appendVideo("")}
               block
-              icon={<PlayCircleOutlined />}
+              icon={<LuCirclePlay size={16} />}
               size="large"
             >
               Add Video URL or File

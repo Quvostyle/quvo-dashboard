@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Row, Col, Select, Radio, Descriptions, Divider, Input, Button, Space, message } from 'antd';
-import { LinkOutlined, DeleteOutlined } from '@ant-design/icons';
+import { LuExternalLink, LuTrash2 } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
 import type { IntakeRequest } from '../services/dataService';
 import {
@@ -387,13 +387,13 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <Space>
                           {item.product_link && (
                             <a href={item.product_link} target="_blank" rel="noreferrer" title="Store link" style={{ color: 'var(--color-ink)' }}>
-                              <LinkOutlined />
+                              <LuExternalLink size={15} />
                             </a>
                           )}
                           <Button
                             danger
                             size="small"
-                            icon={<DeleteOutlined />}
+                            icon={<LuTrash2 size={14} />}
                             onClick={() => handleDeleteLookbookItem(item.id)}
                           />
                         </Space>

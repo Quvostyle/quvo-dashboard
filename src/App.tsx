@@ -6,18 +6,20 @@ import {
   message,
   Card,
   Input,
-  Button
+  Button,
+  Drawer
 } from 'antd';
 import {
-  DashboardOutlined,
-  ShoppingOutlined,
-  FolderOutlined,
-  UserOutlined,
-  LogoutOutlined,
-  CreditCardOutlined,
-  MailOutlined,
-  LockOutlined
-} from '@ant-design/icons';
+  LuLayoutDashboard,
+  LuShoppingBag,
+  LuFolder,
+  LuUser,
+  LuLogOut,
+  LuCreditCard,
+  LuMail,
+  LuLock,
+  LuMenu
+} from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
@@ -61,112 +63,173 @@ const DashboardRoutes: React.FC<{
   setShowOrderModal,
   setSelectedOrder
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const currentKey = location.pathname.replace('/', '') || 'overview';
+    const navigate = useNavigate();
+    const location = useLocation();
+    const currentKey = location.pathname.replace('/', '') || 'overview';
 
-  return (
-    <Layout className="dashboard-layout min-h-screen">
-      {/* LEFT SIDEBAR NAVIGATION */}
-      <Sider
-        width={260}
-        breakpoint="lg"
-        collapsedWidth="0"
-        className="dashboard-sidebar"
-      >
-        <div className="sidebar-logo">
-          <h2>Quvo</h2>
-          <span>Studio</span>
+    const [collapsed, setCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
+
+    useEffect(() => {
+      const handleResize = () => {
+        const mobile = window.innerWidth < 992;
+        setIsMobile(mobile);
+        if (mobile) {
+          setCollapsed(true); // Close drawer by default on mobile
+        }
+      };
+      window.addEventListener('resize', handleResize);
+      handleResize(); // run initially
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const sidebarContent = (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className="sidebar-logo" style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start', padding: (collapsed && !isMobile) ? '0' : '0 1.25rem', gap: '0.5rem', borderBottom: '1px solid var(--color-line)', boxSizing: 'border-box' }}>
+          {(collapsed && !isMobile) ? (
+            <h2 style={{ fontSize: '1.6rem', margin: 0 }}>Q</h2>
+          ) : (
+            <>
+              <h2>Quvo</h2>
+              <span>Studio</span>
+            </>
+          )}
         </div>
 
         <Menu
           mode="inline"
           selectedKeys={[currentKey]}
-          onClick={({ key }) => navigate(`/${key}`)}
+          onClick={({ key }) => {
+            navigate(`/${key}`);
+            if (isMobile) {
+              setCollapsed(true);
+            }
+          }}
           className="sidebar-menu"
           items={[
-            { key: 'overview', icon: <DashboardOutlined />, label: 'Overview' },
-            { key: 'orders', icon: <ShoppingOutlined />, label: `Orders (${pendingOrdersCount} pend)` },
-            { key: 'categories', icon: <FolderOutlined />, label: 'Categories' },
-            { key: 'providers', icon: <UserOutlined />, label: 'Providers' },
-            { key: 'ratecards', icon: <CreditCardOutlined />, label: 'Rate Cards' }
+            { key: 'overview', icon: <LuLayoutDashboard size={18} />, label: 'Overview' },
+            { key: 'orders', icon: <LuShoppingBag size={18} />, label: `Orders (${pendingOrdersCount} pend)` },
+            { key: 'categories', icon: <LuFolder size={18} />, label: 'Categories' },
+            { key: 'providers', icon: <LuUser size={18} />, label: 'Providers' },
+            { key: 'ratecards', icon: <LuCreditCard size={18} />, label: 'Rate Cards' }
           ]}
         />
 
-        <div className="sidebar-user">
-          <div className="user-info">
-            <span className="name">Admin User</span>
-            <span className="role">Senior Producer</span>
-          </div>
-          <div className="logout-btn" title="Log Out" onClick={handleLogout}>
-            <LogoutOutlined style={{ fontSize: '16px' }} />
+        <div className="sidebar-user" style={{ padding: (collapsed && !isMobile) ? '1rem 0' : '1.25rem', flexDirection: (collapsed && !isMobile) ? 'column' : 'row', gap: (collapsed && !isMobile) ? '1rem' : '0', justifyContent: (collapsed && !isMobile) ? 'center' : 'space-between', borderTop: '1px solid var(--color-line)', marginTop: 'auto', background: 'rgba(127, 109, 94, 0.02)' }}>
+          {!(collapsed && !isMobile) ? (
+            <div className="user-info">
+              <span className="name">Admin User</span>
+              <span className="role">Senior Producer</span>
+            </div>
+          ) : null}
+          <div className="logout-btn" title="Log Out" onClick={handleLogout} style={{ margin: (collapsed && !isMobile) ? '0 auto' : '0' }}>
+            <LuLogOut size={16} />
           </div>
         </div>
-      </Sider>
+      </div>
+    );
 
-      {/* RIGHT SIDE: HEADER + CONTENT */}
-      <Layout style={{ background: 'transparent' }}>
-        <Header
-          style={{
-            background: 'var(--color-bone)',
-            borderBottom: '1px solid var(--color-line)',
-            padding: '0 2.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '70px'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-ink)', textTransform: 'capitalize' }}>
-              {tabTitles[currentKey] || 'Workspace'}
-            </h3>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span className="label-overline" style={{ fontSize: '0.65rem', border: '1px solid var(--color-line)', padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'var(--color-paper)' }}>
-              Production Env
-            </span>
-          </div>
-        </Header>
+    return (
+      <Layout className="dashboard-layout min-h-screen">
+        {/* LEFT SIDEBAR NAVIGATION (Desktop: Sider, Mobile: Drawer overlay) */}
+        {isMobile ? (
+          <Drawer
+            placement="left"
+            closable={false}
+            onClose={() => setCollapsed(true)}
+            open={!collapsed}
+            styles={{ body: { padding: 0, background: 'var(--color-paper)' } }}
+            width={260}
+          >
+            {sidebarContent}
+          </Drawer>
+        ) : (
+          <Sider
+            width={260}
+            collapsed={collapsed}
+            onCollapse={(val) => setCollapsed(val)}
+            collapsedWidth={80}
+            trigger={null}
+            className="dashboard-sidebar"
+          >
+            {sidebarContent}
+          </Sider>
+        )}
 
-        {/* CONTENT AREA */}
-        <Content className="dashboard-content-area animate-fade-in">
-          <Routes>
-            <Route
-              path="/overview"
-              element={
-                <OverviewTab
-                  onViewAllQueue={() => navigate('/orders')}
-                  onManageRequest={handleOpenOrderDetails}
-                />
-              }
-            />
-            <Route
-              path="/orders"
-              element={
-                <OrdersTab
-                  onManageRequest={handleOpenOrderDetails}
-                />
-              }
-            />
-            <Route path="/categories" element={<CategoriesTab />} />
-            <Route path="/providers" element={<ProvidersTab />} />
-            <Route path="/ratecards" element={<RateCardsTab />} />
-            <Route path="*" element={<Navigate to="/overview" replace />} />
-          </Routes>
-        </Content>
+        {/* RIGHT SIDE: HEADER + CONTENT */}
+        <Layout style={{ background: 'transparent' }}>
+          <Header
+            style={{
+              background: 'var(--color-bone)',
+              borderBottom: '1px solid var(--color-line)',
+              padding: isMobile ? '0 1rem' : '0 2.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              height: '70px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Button
+                type="text"
+                icon={<LuMenu size={20} />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',
+                  color: 'var(--color-ink)',
+                  backgroundColor: 'rgba(127, 109, 94, 0.05)'
+                }}
+              />
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-ink)', textTransform: 'capitalize' }}>
+                {tabTitles[currentKey] || 'Workspace'}
+              </h3>
+            </div>
+          </Header>
+
+          {/* CONTENT AREA */}
+          <Content className="dashboard-content-area animate-fade-in">
+            <Routes>
+              <Route
+                path="/overview"
+                element={
+                  <OverviewTab
+                    onViewAllQueue={() => navigate('/orders')}
+                    onManageRequest={handleOpenOrderDetails}
+                  />
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  <OrdersTab
+                    onManageRequest={handleOpenOrderDetails}
+                  />
+                }
+              />
+              <Route path="/categories" element={<CategoriesTab />} />
+              <Route path="/providers" element={<ProvidersTab />} />
+              <Route path="/ratecards" element={<RateCardsTab />} />
+              <Route path="*" element={<Navigate to="/overview" replace />} />
+            </Routes>
+          </Content>
+        </Layout>
+
+        {/* ================= SHARED DETAILS MODAL ================= */}
+        <OrderDetailsModal
+          visible={showOrderModal}
+          selectedOrder={selectedOrder}
+          onCancel={() => setShowOrderModal(false)}
+          onOrderUpdated={(updated) => setSelectedOrder(updated)}
+        />
       </Layout>
-
-      {/* ================= SHARED DETAILS MODAL ================= */}
-      <OrderDetailsModal
-        visible={showOrderModal}
-        selectedOrder={selectedOrder}
-        onCancel={() => setShowOrderModal(false)}
-        onOrderUpdated={(updated) => setSelectedOrder(updated)}
-      />
-    </Layout>
-  );
-};
+    );
+  };
 
 function App() {
   // Authentication State
@@ -268,7 +331,7 @@ function App() {
                       }
                     }}
                     render={({ field }) => (
-                      <Input {...field} prefix={<MailOutlined style={{ color: 'var(--color-mute)' }} />} placeholder="e.g. admin@quvo.in" />
+                      <Input {...field} prefix={<LuMail size={16} style={{ color: 'var(--color-mute)' }} />} placeholder="e.g. admin@quvo.in" />
                     )}
                   />
                   {errors.email && (
@@ -287,7 +350,7 @@ function App() {
                     control={control}
                     rules={{ required: 'Please input admin password.' }}
                     render={({ field }) => (
-                      <Input.Password {...field} prefix={<LockOutlined style={{ color: 'var(--color-mute)' }} />} placeholder="Enter password" />
+                      <Input.Password {...field} prefix={<LuLock size={16} style={{ color: 'var(--color-mute)' }} />} placeholder="Enter password" />
                     )}
                   />
                   {errors.password && (

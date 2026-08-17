@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Space, Tag, Popconfirm, Form, message, Skeleton } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, Modal, Form, message, Skeleton } from 'antd';
+import { LuPlus, LuPencil, LuTrash2, LuCircleCheck, LuBan } from 'react-icons/lu';
 import type { Category } from '../services/dataService';
 import {
   useGetCategoriesQuery,
@@ -150,44 +150,54 @@ export const CategoriesTab: React.FC = () => {
 
   const columns = useMemo(() => [
     {
-      Header: 'Name',
-      accessor: 'name',
-      Cell: ({ value, row }: any) => {
+      Header: 'Category / Subcategory',
+      id: 'category_details',
+      Cell: ({ row }: any) => {
         const record = row.original;
         const isSub = !!record.parentId;
         return (
-          <span style={{
-            fontWeight: isSub ? 500 : 700,
-            color: record.isActive ? 'inherit' : 'var(--color-mute)',
-            textDecoration: record.isActive ? 'none' : 'line-through'
-          }}>
-            {value}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {!isSub && record.icon ? (
+              <img src={record.icon} alt={record.name} style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--color-line)' }} />
+            ) : null}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+              <span style={{
+                fontWeight: isSub ? 500 : 700,
+                fontSize: isSub ? '0.9rem' : '1rem',
+                color: record.isActive ? 'var(--color-ink)' : 'var(--color-mute)',
+                textDecoration: record.isActive ? 'none' : 'line-through'
+              }}>
+                {record.name}
+              </span>
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {isSub ? <Tag color="cyan" style={{ margin: 0, fontSize: '0.68rem', lineHeight: '1.2' }}>Subcategory</Tag> : <Tag color="blue" style={{ margin: 0, fontSize: '0.68rem', lineHeight: '1.2' }}>Parent Group</Tag>}
+                <span>•</span>
+                <span>Order: {record.sortOrder}</span>
+              </div>
+              {record.description && (
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', fontStyle: 'italic', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={record.description}>
+                  {record.description}
+                </span>
+              )}
+            </div>
+          </div>
         );
       }
     },
     {
-      Header: 'Type',
-      id: 'type',
+      Header: 'Slug & Media',
+      id: 'slug_media',
       Cell: ({ row }: any) => {
         const record = row.original;
-        const isSub = !!record.parentId;
-        return isSub ? <Tag color="cyan">Subcategory</Tag> : <Tag color="blue">Parent Group</Tag>;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+            <div><Tag color="orange" style={{ fontFamily: 'monospace', margin: 0 }}>{record.slug}</Tag></div>
+            {record.videos?.length > 0 ? (
+              <div style={{ fontSize: '0.72rem', color: 'var(--color-mute)' }}>🎥 {record.videos.length} Videos</div>
+            ) : null}
+          </div>
+        );
       }
-    },
-    {
-      Header: 'Slug',
-      accessor: 'slug',
-      Cell: ({ value }: any) => <Tag color="orange" style={{ fontFamily: 'monospace' }}>{value}</Tag>
-    },
-    {
-      Header: 'Description',
-      accessor: 'description',
-      Cell: ({ value }: any) => value || <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>None</span>
-    },
-    {
-      Header: 'Sort Order',
-      accessor: 'sortOrder'
     },
     {
       Header: 'Status',
@@ -203,30 +213,42 @@ export const CategoriesTab: React.FC = () => {
         return (
           <Space size="small">
             <Button
-              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
-              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              className="action-btn action-btn-edit"
+              icon={<LuPencil size={15} />}
               onClick={() => isSub ? handleSelectSubcategoryForEdit(record) : handleSelectCategoryForEdit(record)}
               title="Edit"
             />
             <Button
-              className={record.isActive ? "action-btn bg-wine/8 text-wine hover:bg-wine/15" : "action-btn bg-gold/8 text-gold hover:bg-gold/15"}
-              icon={record.isActive ? <StopOutlined style={{ fontSize: '15px' }} /> : <CheckCircleOutlined style={{ fontSize: '15px' }} />}
-              onClick={() => handleToggleCategoryActive(record.id, record.isActive, record.name)}
+              className={record.isActive ? "action-btn action-btn-delete" : "action-btn action-btn-activate"}
+              icon={record.isActive ? <LuBan size={15} /> : <LuCircleCheck size={15} />}
+              onClick={() => {
+                const action = record.isActive ? 'deactivate' : 'activate';
+                Modal.confirm({
+                  title: `${record.isActive ? 'Deactivate' : 'Activate'} Category`,
+                  content: `Are you sure you want to ${action} category '${record.name}'?`,
+                  okText: record.isActive ? 'Yes, Deactivate' : 'Yes, Activate',
+                  okType: record.isActive ? 'danger' : 'primary',
+                  cancelText: 'No',
+                  onOk: () => handleToggleCategoryActive(record.id, record.isActive, record.name),
+                });
+              }}
               title={record.isActive ? "Deactivate" : "Activate"}
             />
-            <Popconfirm
-              title={`Are you sure you want to delete '${record.name}'?`}
-              onConfirm={() => handleDeleteCategory(record.id, record.name)}
-              okText="Yes"
-              cancelText="No"
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
-                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
-                title="Delete"
-              />
-            </Popconfirm>
+            <Button
+              className="action-btn action-btn-delete"
+              icon={<LuTrash2 size={15} />}
+              title="Delete"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Delete Category',
+                  content: `Are you sure you want to delete category '${record.name}'?`,
+                  okText: 'Yes, Delete',
+                  okType: 'danger',
+                  cancelText: 'No',
+                  onOk: () => handleDeleteCategory(record.id, record.name),
+                });
+              }}
+            />
           </Space>
         );
       }
@@ -261,16 +283,16 @@ export const CategoriesTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Taxonomy System</p>
           <h2 className="text-3xl font-bold">Categories & Subcategories</h2>
         </div>
-        <Space>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenAddCategory}>
+        <Space wrap className="w-full sm:w-auto">
+          <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddCategory} className="w-full sm:w-auto">
             Add Parent Category
           </Button>
-          <Button type="default" icon={<PlusOutlined />} onClick={handleOpenAddSubcategory}>
+          <Button type="default" icon={<LuPlus size={16} />} onClick={handleOpenAddSubcategory} className="w-full sm:w-auto">
             Add Subcategory
           </Button>
         </Space>
