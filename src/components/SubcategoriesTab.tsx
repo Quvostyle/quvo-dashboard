@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Table, Button, Space, Tag, Popconfirm, Form, message, Spin } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import React, { useState, useMemo } from 'react';
+import { Button, Space, Tag, Popconfirm, Form, message, Skeleton } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import type { Category } from '../services/dataService';
 import {
   useGetCategoriesQuery,
@@ -9,6 +9,7 @@ import {
   useDeleteCategoryMutation
 } from '../store/apiSlice';
 import { SubcategoryModal } from './SubcategoryModal';
+import { Table } from './common/Table';
 
 export const SubcategoriesTab: React.FC = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
@@ -70,34 +71,127 @@ export const SubcategoriesTab: React.FC = () => {
     }
   };
 
+  // General Toggle / Delete
   const handleToggleSubcategoryActive = async (id: string, currentStatus: boolean, name: string) => {
     try {
       await updateCategory({ id, isActive: !currentStatus }).unwrap();
-      message.success(`'${name}' is now ${!currentStatus ? 'Active' : 'Deactivated'}.`);
+      message.success(`Subcategory '${name}' is now ${!currentStatus ? 'Active' : 'Deactivated'}.`);
     } catch (e: any) {
-      message.error(e.data || e.message || 'Error modifying subcategory state');
+      message.error(e.data || e.message || 'Error updating status');
     }
   };
 
   const handleDeleteSubcategory = async (id: string, name: string) => {
     try {
       await deleteCategory(id).unwrap();
-      message.info(`Subcategory '${name}' deleted.`);
+      message.info(`Deleted subcategory '${name}'.`);
     } catch (e: any) {
       message.error(e.data || e.message || 'Error deleting subcategory');
     }
   };
 
+  const subcategories = useMemo(() => categories.filter(c => c.parentId), [categories]);
+
+  const columns = useMemo(() => [
+    {
+      Header: 'Name',
+      accessor: 'name',
+      Cell: ({ value, row }: any) => (
+        <strong style={{ color: row.original.isActive ? 'inherit' : 'var(--color-mute)', textDecoration: row.original.isActive ? 'none' : 'line-through' }}>
+          {value}
+        </strong>
+      )
+    },
+    {
+      Header: 'Parent Group',
+      accessor: 'parentId',
+      Cell: ({ value }: any) => {
+        const parent = categories.find(c => c.id === value);
+        return parent ? <Tag color="orange">{parent.name}</Tag> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Orphaned</span>;
+      }
+    },
+    {
+      Header: 'Slug',
+      accessor: 'slug',
+      Cell: ({ value }: any) => <Tag color="cyan">{value}</Tag>
+    },
+    {
+      Header: 'Description',
+      accessor: 'description',
+      Cell: ({ value }: any) => value || <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>None</span>
+    },
+    {
+      Header: 'Sort Order',
+      accessor: 'sortOrder'
+    },
+    {
+      Header: 'Status',
+      accessor: 'isActive',
+      Cell: ({ value }: any) => value ? <Tag color="success">Active</Tag> : <Tag color="error">Inactive</Tag>
+    },
+    {
+      Header: 'Actions',
+      id: 'actions',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <Space size="small">
+            <Button
+              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
+              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              onClick={() => handleSelectSubcategoryForEdit(record)}
+              title="Edit"
+            />
+            <Button
+              className={record.isActive ? "action-btn bg-wine/8 text-wine hover:bg-wine/15" : "action-btn bg-gold/8 text-gold hover:bg-gold/15"}
+              icon={record.isActive ? <StopOutlined style={{ fontSize: '15px' }} /> : <CheckCircleOutlined style={{ fontSize: '15px' }} />}
+              onClick={() => handleToggleSubcategoryActive(record.id, record.isActive, record.name)}
+              title={record.isActive ? "Deactivate" : "Activate"}
+            />
+            <Popconfirm
+              title={`Are you sure you want to delete subcategory '${record.name}'?`}
+              onConfirm={() => handleDeleteSubcategory(record.id, record.name)}
+              okText="Yes"
+              cancelText="No"
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
+                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
+                title="Delete"
+              />
+            </Popconfirm>
+          </Space>
+        );
+      }
+    }
+  ], [categories]);
+
   if (categoriesLoading) {
     return (
-      <div style={{ minHeight: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-        <Spin size="large" />
-        <span className="label-overline">Fetching Subcategories...</span>
+      <div className="animate-fade-in">
+        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <div>
+            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <br />
+            <Skeleton.Input active style={{ width: '300px', height: '40px' }} />
+          </div>
+          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+        </div>
+
+        {/* Table Page Skeleton */}
+        <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
+          {/* Mock Search/Filter Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
+            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          </div>
+          {/* Mock Table Rows */}
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
       </div>
     );
   }
-
-  const subcategories = categories.filter(c => c.parentId);
 
   return (
     <div className="animate-fade-up">
@@ -113,82 +207,9 @@ export const SubcategoriesTab: React.FC = () => {
 
       {/* Full-width Table of Subcategories */}
       <Table
-        rowKey="id"
-        dataSource={subcategories}
-        pagination={{ pageSize: 8 }}
-        size="middle"
-        className="premium-table"
-        columns={[
-          {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text, record) => (
-              <strong style={{ color: record.isActive ? 'inherit' : 'var(--color-mute)', textDecoration: record.isActive ? 'none' : 'line-through' }}>
-                {text}
-              </strong>
-            )
-          },
-          {
-            title: 'Parent Group',
-            dataIndex: 'parentId',
-            key: 'parent',
-            render: (parentId) => {
-              const parent = categories.find(c => c.id === parentId);
-              return parent ? <Tag color="orange">{parent.name}</Tag> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Orphaned</span>;
-            }
-          },
-          {
-            title: 'Slug',
-            dataIndex: 'slug',
-            key: 'slug',
-            render: (text) => <Tag color="cyan">{text}</Tag>
-          },
-          {
-            title: 'Description',
-            dataIndex: 'description',
-            key: 'description',
-            render: (text) => text || <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>None</span>
-          },
-          {
-            title: 'Sort Order',
-            dataIndex: 'sortOrder',
-            key: 'sortOrder',
-            sorter: (a, b) => a.sortOrder - b.sortOrder
-          },
-          {
-            title: 'Status',
-            dataIndex: 'isActive',
-            key: 'status',
-            render: (isActive) => isActive ? <Tag color="success">Active</Tag> : <Tag color="error">Inactive</Tag>
-          },
-          {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-              <Space>
-                <Button icon={<EditOutlined />} size="small" onClick={() => handleSelectSubcategoryForEdit(record)}>Edit</Button>
-                <Button
-                  danger={record.isActive}
-                  icon={record.isActive ? <DeleteOutlined /> : <CheckCircleOutlined />}
-                  size="small"
-                  onClick={() => handleToggleSubcategoryActive(record.id, record.isActive, record.name)}
-                >
-                  {record.isActive ? 'Deactivate' : 'Activate'}
-                </Button>
-                <Popconfirm
-                  title={`Are you sure you want to delete subcategory '${record.name}'?`}
-                  onConfirm={() => handleDeleteSubcategory(record.id, record.name)}
-                  okText="Yes"
-                  cancelText="No"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Button danger icon={<DeleteOutlined />} size="small">Delete</Button>
-                </Popconfirm>
-              </Space>
-            )
-          }
-        ]}
+        columns={columns}
+        data={subcategories}
+        pageSize={8}
       />
 
       <SubcategoryModal

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Row, Col, Form, Select, Descriptions, Divider, Input, Button, Space, message } from 'antd';
+import { Modal, Row, Col, Select, Radio, Descriptions, Divider, Input, Button, Space, message } from 'antd';
 import { LinkOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useForm, Controller } from 'react-hook-form';
 import type { IntakeRequest } from '../services/dataService';
 import {
   useGetProvidersQuery,
@@ -17,6 +18,15 @@ interface OrderDetailsModalProps {
   selectedOrder: IntakeRequest | null;
   onCancel: () => void;
   onOrderUpdated?: (updatedOrder: IntakeRequest) => void;
+}
+
+interface LookbookFormValues {
+  title: string;
+  category: 'top' | 'bottom' | 'outerwear' | 'shoes' | 'accessory';
+  price: string;
+  image_url: string;
+  product_link: string;
+  description: string;
 }
 
 export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
@@ -36,7 +46,21 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const [addLookbookItem] = useAddLookbookItemMutation();
   const [deleteLookbookItem] = useDeleteLookbookItemMutation();
 
-  const [lookbookForm] = Form.useForm();
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm<LookbookFormValues>({
+    defaultValues: {
+      title: '',
+      category: 'top',
+      price: '',
+      image_url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=256',
+      product_link: '',
+      description: ''
+    }
+  });
 
   if (!selectedOrder) return null;
 
@@ -69,7 +93,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   };
 
-  const handleAddLookbookItem = async (values: any) => {
+  const handleAddLookbookItem = async (values: LookbookFormValues) => {
     try {
       await addLookbookItem({
         orderId: selectedOrder.id,
@@ -82,7 +106,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           category: values.category
         }
       }).unwrap();
-      lookbookForm.resetFields();
+      reset({
+        title: '',
+        category: 'top',
+        price: '',
+        image_url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=256',
+        product_link: '',
+        description: ''
+      });
       message.success('Curated item added to lookbook.');
     } catch (e: any) {
       message.error(e.data || e.message || 'Error adding lookbook item');
@@ -112,30 +143,40 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         {/* Status & Stylist Panel */}
         <Row gutter={16} style={{ background: 'rgba(184, 148, 106, 0.04)', padding: '1.25rem', border: '1px solid var(--color-line)', marginBottom: '1.5rem' }}>
           <Col span={12}>
-            <Form.Item label="Order Status" style={{ marginBottom: 0 }}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Order Status
+              </label>
               <Select
                 value={selectedOrder.status}
                 onChange={handleUpdateOrderStatus}
+                style={{ width: '100%' }}
+                size="large"
               >
                 <Select.Option value="pending">Pending Review</Select.Option>
                 <Select.Option value="assigned">Assigned (In Progress)</Select.Option>
                 <Select.Option value="completed">Completed (Lookbook)</Select.Option>
               </Select>
-            </Form.Item>
+            </div>
           </Col>
 
           <Col span={12}>
-            <Form.Item label="Assign Partner Provider" style={{ marginBottom: 0 }}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Assign Partner Provider
+              </label>
               <Select
                 value={selectedOrder.assigned_stylist_id || ''}
                 onChange={handleAssignStylist}
+                style={{ width: '100%' }}
+                size="large"
               >
                 <Select.Option value="">[Unassigned] Move to Pending</Select.Option>
                 {providers.map(p => (
                   <Select.Option key={p.id} value={p.id}>{p.full_name}</Select.Option>
                 ))}
               </Select>
-            </Form.Item>
+            </div>
           </Col>
         </Row>
 
@@ -180,71 +221,150 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             {activeOrderLookbook ? (
               <div>
                 {/* Intro Note */}
-                <Form.Item label="Stylist Note to Client" help="Note saves automatically when you click outside the textarea.">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stylist Note to Client
+                  </label>
                   <Input.TextArea
                     defaultValue={activeOrderLookbook.intro_note}
                     placeholder="Write a message explaining recommendations..."
                     rows={2}
                     onBlur={(e) => handleSaveIntroNote(e.target.value)}
                   />
-                </Form.Item>
+                  <span className="text-gray-500 text-xs block mt-1">
+                    Note saves automatically when you click outside the textarea.
+                  </span>
+                </div>
 
                 {/* Add Item form */}
-                <Form
-                  form={lookbookForm}
-                  layout="vertical"
-                  onFinish={handleAddLookbookItem}
-                  requiredMark={false}
-                  initialValues={{ category: 'top', price: '', product_link: '', image_url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=256' }}
-                  style={{ background: 'rgba(127, 109, 94, 0.02)', padding: '1rem', border: '1px solid var(--color-line)', marginBottom: '1.5rem' }}
+                <form
+                  onSubmit={handleSubmit(handleAddLookbookItem)}
+                  style={{ background: 'rgba(127, 109, 94, 0.02)', padding: '1.25rem', border: '1px solid var(--color-line)', marginBottom: '1.5rem' }}
+                  className="space-y-4"
                 >
-                  <strong style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-mute)', marginBottom: '0.75rem' }}>Add Curated Clothing Piece</strong>
+                  <strong style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-mute)', marginBottom: '1rem' }}>Add Curated Clothing Piece</strong>
                   <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item name="title" label="Piece Title" rules={[{ required: true, message: 'Title is required' }]}>
-                        <Input placeholder="e.g. Tweed Overcoat" />
-                      </Form.Item>
+                    <Col span={24}>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Piece Title *
+                        </label>
+                        <Controller
+                          name="title"
+                          control={control}
+                          rules={{ required: 'Title is required' }}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="e.g. Tweed Overcoat" size="large" style={{ borderRadius: 0 }} />
+                          )}
+                        />
+                        {errors.title && (
+                          <span className="text-red-500 text-sm block mt-1">
+                            {errors.title.message}
+                          </span>
+                        )}
+                      </div>
                     </Col>
-                    <Col span={12}>
-                      <Form.Item name="category" label="Clothing Type" rules={[{ required: true }]}>
-                        <Select>
-                          <Select.Option value="top">Topwear</Select.Option>
-                          <Select.Option value="bottom">Bottomwear</Select.Option>
-                          <Select.Option value="outerwear">Outerwear</Select.Option>
-                          <Select.Option value="shoes">Shoes</Select.Option>
-                          <Select.Option value="accessory">Accessory</Select.Option>
-                        </Select>
-                      </Form.Item>
+                  </Row>
+
+                  <Row gutter={16}>
+                    <Col span={24}>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Clothing Type *
+                        </label>
+                        <Controller
+                          name="category"
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <Radio.Group {...field} style={{ marginTop: '0.25rem' }}>
+                              <Space wrap>
+                                <Radio value="top">Topwear</Radio>
+                                <Radio value="bottom">Bottomwear</Radio>
+                                <Radio value="outerwear">Outerwear</Radio>
+                                <Radio value="shoes">Shoes</Radio>
+                                <Radio value="accessory">Accessory</Radio>
+                              </Space>
+                            </Radio.Group>
+                          )}
+                        />
+                      </div>
                     </Col>
                   </Row>
 
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Form.Item name="price" label="Formatted Price">
-                        <Input placeholder="e.g. ₹5,600" />
-                      </Form.Item>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Formatted Price
+                        </label>
+                        <Controller
+                          name="price"
+                          control={control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="e.g. ₹5,600" size="large" style={{ borderRadius: 0 }} />
+                          )}
+                        />
+                      </div>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="image_url" label="Clothing Image URL" rules={[{ required: true, message: 'Image URL is required' }]}>
-                        <Input placeholder="Image Unsplash URL" />
-                      </Form.Item>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Clothing Image URL *
+                        </label>
+                        <Controller
+                          name="image_url"
+                          control={control}
+                          rules={{ required: 'Image URL is required' }}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Image Unsplash URL" size="large" style={{ borderRadius: 0 }} />
+                          )}
+                        />
+                        {errors.image_url && (
+                          <span className="text-red-500 text-sm block mt-1">
+                            {errors.image_url.message}
+                          </span>
+                        )}
+                      </div>
                     </Col>
                   </Row>
 
-                  <Form.Item name="product_link" label="E-Commerce Buy Link">
-                    <Input placeholder="Zara, HM, or designer shop link" />
-                  </Form.Item>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      E-Commerce Buy Link
+                    </label>
+                    <Controller
+                      name="product_link"
+                      control={control}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="Zara, HM, or designer shop link" size="large" style={{ borderRadius: 0 }} />
+                      )}
+                    />
+                  </div>
 
-                  <Form.Item name="description" label="Style Tip / Explanation">
-                    <Input.TextArea placeholder="Describe style pairings..." rows={2} />
-                  </Form.Item>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Style Tip / Explanation
+                    </label>
+                    <Controller
+                      name="description"
+                      control={control}
+                      render={({ field }) => (
+                        <Input.TextArea {...field} placeholder="Describe style pairings..." rows={3} style={{ borderRadius: 0 }} />
+                      )}
+                    />
+                  </div>
 
-                  <div style={{ textAlign: 'right' }}>
-                    <Button type="primary" htmlType="submit">
+                  <div style={{ textAlign: 'right', marginTop: '1.5rem' }}>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      size="large"
+                    >
                       Curate Item
                     </Button>
                   </div>
-                </Form>
+                </form>
 
                 {/* Items list */}
                 <strong style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-mute)', marginBottom: '0.75rem' }}>Curated Items ({activeOrderLookbook.items ? activeOrderLookbook.items.length : 0})</strong>

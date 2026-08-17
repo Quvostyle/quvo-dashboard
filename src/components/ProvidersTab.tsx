@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Table, Button, Input, Select, Space, Tag, Popconfirm, Form, message, Spin, Avatar, Badge } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Button, Input, Select, Space, Tag, Popconfirm, Form, message, Avatar, Skeleton } from 'antd';
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
 import type { Provider } from '../services/dataService';
 import {
@@ -9,6 +9,7 @@ import {
   useDeleteProviderMutation
 } from '../store/apiSlice';
 import { ProviderModal } from './ProviderModal';
+import { Table } from './common/Table';
 
 export const ProvidersTab: React.FC = () => {
   const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery();
@@ -79,25 +80,181 @@ export const ProvidersTab: React.FC = () => {
     }
   };
 
+  const filteredProviders = useMemo(() => {
+    return providers.filter((p) => {
+      const matchesSearch =
+        p.full_name.toLowerCase().includes(providerSearch.toLowerCase()) ||
+        p.email.toLowerCase().includes(providerSearch.toLowerCase()) ||
+        p.mobile.includes(providerSearch);
+
+      const matchesGender = providerGenderFilter === 'all' || p.gender === providerGenderFilter;
+
+      return matchesSearch && matchesGender;
+    });
+  }, [providers, providerSearch, providerGenderFilter]);
+
+  const columns = useMemo(() => [
+    {
+      Header: 'Name',
+      accessor: 'full_name',
+      Cell: ({ value, row }: any) => {
+        const record = row.original;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Avatar
+              style={{
+                backgroundColor: 'var(--color-ink)',
+                color: '#FFF8F0',
+                fontWeight: 700,
+                fontSize: '0.9rem'
+              }}
+              size={40}
+            >
+              {value ? value.charAt(0).toUpperCase() : 'P'}
+            </Avatar>
+            <div>
+              <a
+                href={`#provider-profile-${record.id}`}
+                style={{
+                  display: 'block',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: 'var(--color-gold)',
+                  textDecoration: 'none'
+                }}
+              >
+                {value}
+              </a>
+              <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)', fontFamily: 'monospace' }}>ID: {record.id.slice(0, 8)}</span>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      Header: 'Email',
+      accessor: 'email',
+      Cell: ({ value }: any) => (
+        <a href={`mailto:${value}`} style={{ color: 'var(--color-gold)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', textDecoration: 'none' }}>
+          <MailOutlined style={{ fontSize: '12px' }} /> {value}
+        </a>
+      )
+    },
+    {
+      Header: 'Mobile',
+      accessor: 'mobile',
+      Cell: ({ value }: any) => (
+        <a href={`tel:${value}`} style={{ fontSize: '0.85rem', color: 'var(--color-gold)', display: 'flex', alignItems: 'center', gap: '0.35rem', textDecoration: 'none' }}>
+          <PhoneOutlined style={{ fontSize: '12px' }} /> {value}
+        </a>
+      )
+    },
+    {
+      Header: 'Gender',
+      accessor: 'gender',
+      Cell: ({ value }: any) => {
+        const colors: Record<string, string> = {
+          male: 'blue',
+          female: 'magenta',
+          other: 'purple'
+        };
+        return <Tag color={colors[value] || 'default'} style={{ textTransform: 'capitalize', borderRadius: '12px', padding: '0 8px' }}>{value}</Tag>;
+      }
+    },
+    {
+      Header: 'Birth Date',
+      accessor: 'birth_date',
+      Cell: ({ value }: any) => {
+        if (!value) return '—';
+        const d = new Date(value);
+        return <span style={{ fontSize: '0.85rem' }}>{d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>;
+      }
+    },
+    {
+      Header: 'Address',
+      accessor: 'address',
+      Cell: ({ value }: any) => (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', maxWidth: '180px' }}>
+          <HomeOutlined style={{ fontSize: '12px', color: 'var(--color-mute)', marginTop: '3px' }} />
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', lineHeight: '1.2' }} title={value}>{value}</span>
+        </div>
+      )
+    },
+    {
+      Header: 'Status',
+      accessor: 'isActive',
+      Cell: ({ value }: any) => (
+        <Tag
+          color={value ? 'success' : 'error'}
+          style={{
+            borderRadius: '12px',
+            fontSize: '0.72rem',
+            fontWeight: 600,
+            padding: '2px 10px',
+            border: `1px solid ${value ? '#b7eb8f' : '#ffa39e'}`
+          }}
+        >
+          {value ? 'ACTIVE' : 'INACTIVE'}
+        </Tag>
+      )
+    },
+    {
+      Header: 'Actions',
+      id: 'actions',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        return (
+          <Space size="small">
+            <Button
+              className="action-btn bg-gold/8 text-gold hover:bg-gold/15"
+              icon={<EditOutlined style={{ fontSize: '15px' }} />}
+              onClick={() => handleOpenEditProvider(record)}
+              title="Edit Provider"
+            />
+            <Popconfirm
+              title={`Are you sure you want to deactivate provider '${record.full_name}'?`}
+              onConfirm={() => handleDeleteProvider(record.id, record.full_name)}
+              okText="Yes"
+              cancelText="No"
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                className="action-btn bg-wine/8 text-wine hover:bg-wine/15"
+                icon={<DeleteOutlined style={{ fontSize: '15px' }} />}
+                title="Deactivate Provider"
+              />
+            </Popconfirm>
+          </Space>
+        );
+      }
+    }
+  ], []);
+
   if (providersLoading) {
     return (
-      <div style={{ minHeight: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-        <Spin size="large" />
-        <span className="label-overline">Fetching Providers...</span>
+      <div className="animate-fade-in">
+        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <div>
+            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <br />
+            <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+          </div>
+          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+        </div>
+
+        {/* Table Page Skeleton */}
+        <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
+          {/* Mock Search/Filter Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
+            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          </div>
+          {/* Mock Table Rows */}
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
       </div>
     );
   }
-
-  const filteredProviders = providers.filter((p) => {
-    const matchesSearch =
-      p.full_name.toLowerCase().includes(providerSearch.toLowerCase()) ||
-      p.email.toLowerCase().includes(providerSearch.toLowerCase()) ||
-      p.mobile.includes(providerSearch);
-
-    const matchesGender = providerGenderFilter === 'all' || p.gender === providerGenderFilter;
-
-    return matchesSearch && matchesGender;
-  });
 
   return (
     <div className="animate-fade-up">
@@ -106,172 +263,61 @@ export const ProvidersTab: React.FC = () => {
           <p className="label-overline">Providers Directory</p>
           <h2 style={{ fontSize: '2.5rem', marginTop: '0.25rem' }}>Admin Service Providers</h2>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenAddProvider}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleOpenAddProvider}
+        >
           Add Provider
         </Button>
       </div>
 
-      {/* Filter panel */}
-      <div className="management-row" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <Input
-          placeholder="Search provider by name, email, mobile..."
-          prefix={<SearchOutlined />}
-          value={providerSearch}
-          onChange={(e) => setProviderSearch(e.target.value)}
-          style={{ maxWidth: '350px', height: '38px' }}
-        />
-        <Select
-          defaultValue="all"
-          style={{ width: '160px', height: '38px' }}
-          onChange={value => setProviderGenderFilter(value)}
-        >
-          <Select.Option value="all">All Genders</Select.Option>
-          <Select.Option value="male">Male</Select.Option>
-          <Select.Option value="female">Female</Select.Option>
-          <Select.Option value="other">Other</Select.Option>
-        </Select>
+      {/* Filter panel designed like Screenshot 1 */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: '#FFF',
+          padding: '1rem 1.5rem',
+          border: '1px solid var(--color-line)',
+          borderRadius: '4px',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <strong style={{ fontSize: '1rem', color: 'var(--color-ink)' }}>Search:</strong>
+          <Input
+            placeholder="Search provider..."
+            prefix={<SearchOutlined style={{ color: 'var(--color-mute)' }} />}
+            value={providerSearch}
+            onChange={(e) => {
+              setProviderSearch(e.target.value);
+            }}
+            style={{ width: '220px', height: '38px', borderRadius: '4px' }}
+          />
+          <Select
+            defaultValue="all"
+            style={{ width: '130px', height: '38px' }}
+            onChange={value => {
+              setProviderGenderFilter(value);
+            }}
+          >
+            <Select.Option value="all">All Genders</Select.Option>
+            <Select.Option value="male">Male</Select.Option>
+            <Select.Option value="female">Female</Select.Option>
+            <Select.Option value="other">Other</Select.Option>
+          </Select>
+        </div>
       </div>
 
       {/* Providers Table */}
       <Table
-        rowKey="id"
-        dataSource={filteredProviders}
-        pagination={{ pageSize: 8 }}
-        className="premium-table"
-        columns={[
-          {
-            title: 'Name',
-            key: 'name',
-            render: (_, record) => (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Avatar
-                  style={{
-                    backgroundColor: 'var(--color-primary, #3A2E24)',
-                    color: '#FFF8F0',
-                    fontWeight: 700,
-                    fontSize: '0.9rem'
-                  }}
-                  size={40}
-                >
-                  {record.full_name ? record.full_name.charAt(0).toUpperCase() : 'P'}
-                </Avatar>
-                <div>
-                  <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--color-ink)' }}>{record.full_name}</strong>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)', fontFamily: 'monospace' }}>ID: {record.id.slice(0, 8)}</span>
-                </div>
-              </div>
-            )
-          },
-          {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
-            render: (text) => (
-              <a href={`mailto:${text}`} style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem' }}>
-                <MailOutlined style={{ fontSize: '12px' }} /> {text}
-              </a>
-            )
-          },
-          {
-            title: 'Mobile',
-            dataIndex: 'mobile',
-            key: 'mobile',
-            render: (text) => (
-              <span style={{ fontSize: '0.85rem', color: 'var(--color-ink)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <PhoneOutlined style={{ fontSize: '12px', color: 'var(--color-mute)' }} /> {text}
-              </span>
-            )
-          },
-          {
-            title: 'Gender',
-            dataIndex: 'gender',
-            key: 'gender',
-            render: (gender) => {
-              const colors: Record<string, string> = {
-                male: 'blue',
-                female: 'magenta',
-                other: 'purple'
-              };
-              return <Tag color={colors[gender] || 'default'} style={{ textTransform: 'capitalize', borderRadius: '12px', padding: '0 8px' }}>{gender}</Tag>;
-            }
-          },
-          {
-            title: 'Birth Date',
-            dataIndex: 'birth_date',
-            key: 'birth_date',
-            render: (date) => {
-              if (!date) return '—';
-              const d = new Date(date);
-              return <span style={{ fontSize: '0.85rem' }}>{d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>;
-            }
-          },
-          {
-            title: 'Address',
-            dataIndex: 'address',
-            key: 'address',
-            render: (text) => (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', maxWidth: '180px' }}>
-                <HomeOutlined style={{ fontSize: '12px', color: 'var(--color-mute)', marginTop: '3px' }} />
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', lineHeight: '1.2' }} title={text}>{text}</span>
-              </div>
-            )
-          },
-          {
-            title: 'Status',
-            dataIndex: 'isActive',
-            key: 'status',
-            render: (isActive) => (
-              <Badge
-                status={isActive ? 'success' : 'error'}
-                text={
-                  <span style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: isActive ? '#389e0d' : '#cf1322',
-                    background: isActive ? '#f6ffed' : '#fff1f0',
-                    border: `1px solid ${isActive ? '#b7eb8f' : '#ffa39e'}`,
-                    padding: '2px 8px',
-                    borderRadius: '12px'
-                  }}>
-                    {isActive ? 'Active' : 'Inactive'}
-                  </span>
-                }
-              />
-            )
-          },
-          {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-              <Space size="small">
-                <Button
-                  type="text"
-                  icon={<EditOutlined style={{ color: 'var(--color-primary)' }} />}
-                  onClick={() => handleOpenEditProvider(record)}
-                  style={{ border: '1px solid var(--color-line)', borderRadius: '4px' }}
-                >
-                  Edit
-                </Button>
-                <Popconfirm
-                  title={`Are you sure you want to deactivate provider '${record.full_name}'?`}
-                  onConfirm={() => handleDeleteProvider(record.id, record.full_name)}
-                  okText="Yes"
-                  cancelText="No"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Button
-                    danger
-                    type="text"
-                    icon={<DeleteOutlined />}
-                    style={{ border: '1px solid #ffa39e', borderRadius: '4px' }}
-                  >
-                    Deactivate
-                  </Button>
-                </Popconfirm>
-              </Space>
-            )
-          }
-        ]}
+        columns={columns}
+        data={filteredProviders}
+        pageSize={10}
       />
 
       <ProviderModal

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Statistic, List, Button, Space, Spin } from 'antd';
+import { Card, Row, Col, Statistic, List, Button, Space, Skeleton } from 'antd';
 import {
   ShoppingOutlined,
   InfoCircleOutlined,
@@ -26,9 +26,40 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   if (isDataLoading) {
     return (
-      <div style={{ minHeight: '40vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-        <Spin size="large" />
-        <span className="label-overline">Fetching Overview Data...</span>
+      <div className="animate-fade-in">
+        <div style={{ marginBottom: '2rem' }}>
+          <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+          <br />
+          <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+        </div>
+
+        {/* KPI Cards Skeleton */}
+        <Row gutter={[24, 24]} className="kpi-row" style={{ marginBottom: '2rem' }}>
+          {[1, 2, 3, 4].map((i) => (
+            <Col xs={24} sm={12} lg={6} key={i}>
+              <Card className="premium-kpi-card" styles={{ body: { padding: '1.25rem' } }}>
+                <Skeleton active paragraph={{ rows: 1 }} title={{ width: '60%' }} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {/* List & Chart Skeleton */}
+        <Row gutter={[32, 32]}>
+          <Col xs={24} lg={15}>
+            <Card title="Recent Orders Queue">
+              <Skeleton active paragraph={{ rows: 5 }} />
+            </Card>
+          </Col>
+          <Col xs={24} lg={9}>
+            <Card title="Order Status Breakdown">
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '1rem 0' }}>
+                <Skeleton.Avatar active size={100} shape="circle" />
+                <Skeleton active paragraph={{ rows: 3 }} title={false} />
+              </div>
+            </Card>
+          </Col>
+        </Row>
       </div>
     );
   }

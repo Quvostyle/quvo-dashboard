@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Modal,
-  Form,
   Input,
   Row,
   Col,
@@ -19,6 +18,8 @@ import {
   DeleteOutlined,
   PictureOutlined,
 } from "@ant-design/icons";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { useGetRateCardsQuery } from "../store/apiSlice";
 import type { Category, Provider } from "../services/dataService";
 
 interface RateCardModalProps {
@@ -28,9 +29,25 @@ interface RateCardModalProps {
   setRateCardSelectedCategory: (val: string) => void;
   categories: Category[];
   providers: Provider[];
-  form: any;
+  form: any; // unused now, kept for backward compatibility
   onCancel: () => void;
   onSave: (values: any) => void;
+}
+
+interface RateCardFormValues {
+  name: string;
+  categoryId: string;
+  subcategoryId: string;
+  providerId: string;
+  price: number;
+  strikePrice: number;
+  weight: number;
+  serviceType: "b2c" | "b2b";
+  recommended: boolean;
+  bestDeal: boolean;
+  active: boolean;
+  images: string[];
+  videos: string[];
 }
 
 export const RateCardModal: React.FC<RateCardModalProps> = ({
@@ -40,98 +57,226 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
   setRateCardSelectedCategory,
   categories,
   providers,
-  form,
   onCancel,
   onSave,
 }) => {
   const rootCategories = categories.filter((c) => !c.parentId);
 
-  const imagesValue = Form.useWatch("images", form);
-  const videosValue = Form.useWatch("videos", form);
+  const { data: rateCards = [] } = useGetRateCardsQuery();
+  const editingRateCard = rateCards.find((rc) => rc.id === editingRateCardId);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<RateCardFormValues>({
+    defaultValues: {
+      name: "",
+      categoryId: "",
+      subcategoryId: "",
+      providerId: "",
+      price: 499,
+      strikePrice: 699,
+      weight: 1,
+      serviceType: "b2c",
+      recommended: false,
+      bestDeal: false,
+      active: true,
+      images: [],
+      videos: [],
+    },
+  });
+
+  const {
+    fields: imageFields,
+    append: appendImage,
+    remove: removeImage,
+  } = useFieldArray({
+    control,
+    name: "images" as never,
+  });
+
+  const {
+    fields: videoFields,
+    append: appendVideo,
+    remove: removeVideo,
+  } = useFieldArray({
+    control,
+    name: "videos" as never,
+  });
+
+  const imagesValue = watch("images");
+  const videosValue = watch("videos");
+
+  useEffect(() => {
+    if (open) {
+      if (editingRateCard) {
+        reset({
+          name: editingRateCard.name,
+          categoryId: editingRateCard.categoryId,
+          subcategoryId: editingRateCard.subcategoryId,
+          providerId: editingRateCard.providerId || "",
+          price: editingRateCard.price,
+          strikePrice: editingRateCard.strikePrice,
+          weight: editingRateCard.weight,
+          serviceType: editingRateCard.serviceType as any,
+          recommended: editingRateCard.recommended,
+          bestDeal: editingRateCard.bestDeal,
+          active: editingRateCard.active,
+          images: editingRateCard.images || [],
+          videos: editingRateCard.videos || [],
+        });
+      } else {
+        reset({
+          name: "",
+          categoryId: "",
+          subcategoryId: "",
+          providerId: "",
+          price: 499,
+          strikePrice: 699,
+          weight: 1,
+          serviceType: "b2c",
+          recommended: false,
+          bestDeal: false,
+          active: true,
+          images: [],
+          videos: [],
+        });
+      }
+    }
+  }, [open, editingRateCard, reset]);
 
   return (
     <Modal
       title={editingRateCardId ? "Edit Rate Card" : "Create Service Rate Card"}
       open={open}
       onCancel={onCancel}
-      onOk={() => form.submit()}
-      okText="Save Rate Card"
+      footer={null}
       destroyOnClose
-      width={700}
-      className="premium-modal"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onSave}
-        requiredMark={false}
-        initialValues={{
-          weight: 1,
-          recommended: false,
-          bestDeal: false,
-          active: true,
-          serviceType: "b2c",
-          images: [],
-          videos: [],
-        }}
+      <form
+        onSubmit={handleSubmit(onSave)}
+        className="space-y-4 mt-4"
+        style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}
       >
-        <Form.Item
-          name="name"
-          label="Service Name"
-          rules={[{ required: true, message: "Service name is required" }]}
-        >
-          <Input placeholder="e.g. Standard Split AC Service" />
-        </Form.Item>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Service Name *
+          </label>
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: "Service name is required" }}
+            render={({ field }) => (
+              <Input {...field} placeholder="e.g. Standard Split AC Service" size="large" />
+            )}
+          />
+          {errors.name && (
+            <span className="text-red-500 text-sm block mt-1">
+              {errors.name.message}
+            </span>
+          )}
+        </div>
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
-              name="categoryId"
-              label="Root Category Group"
-              rules={[{ required: true, message: "Select parent category" }]}
-            >
-              <Select onChange={(val) => setRateCardSelectedCategory(val)}>
-                {rootCategories.map((r) => (
-                  <Select.Option key={r.id} value={r.id}>
-                    {r.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="subcategoryId"
-              label="Subcategory Mapping"
-              rules={[{ required: true, message: "Select subcategory" }]}
-            >
-              <Select disabled={!rateCardSelectedCategory}>
-                {categories?.length &&
-                  categories
-                    ?.filter((c) => c.id === rateCardSelectedCategory)?.[0]
-                    ?.children?.map((sub) => (
-                      <Select.Option key={sub.id} value={sub.id}>
-                        {sub.name}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Root Category Group *
+              </label>
+              <Controller
+                name="categoryId"
+                control={control}
+                rules={{ required: "Select parent category" }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    onChange={(val) => {
+                      field.onChange(val);
+                      setValue("subcategoryId", "");
+                      setRateCardSelectedCategory(val);
+                    }}
+                    style={{ width: "100%" }}
+                    size="large"
+                  >
+                    {rootCategories.map((r) => (
+                      <Select.Option key={r.id} value={r.id}>
+                        {r.name}
                       </Select.Option>
                     ))}
-              </Select>
-            </Form.Item>
+                  </Select>
+                )}
+              />
+              {errors.categoryId && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.categoryId.message}
+                </span>
+              )}
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Subcategory Mapping *
+              </label>
+              <Controller
+                name="subcategoryId"
+                control={control}
+                rules={{ required: "Select subcategory" }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    disabled={!rateCardSelectedCategory}
+                    style={{ width: "100%" }}
+                    size="large"
+                  >
+                    {categories?.length &&
+                      categories
+                        ?.filter((c) => c.id === rateCardSelectedCategory)?.[0]
+                        ?.children?.map((sub) => (
+                          <Select.Option key={sub.id} value={sub.id}>
+                            {sub.name}
+                          </Select.Option>
+                        ))}
+                  </Select>
+                )}
+              />
+              {errors.subcategoryId && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.subcategoryId.message}
+                </span>
+              )}
+            </div>
           </Col>
         </Row>
 
-        <Form.Item
-          name="providerId"
-          label="Partner Provider"
-          rules={[{ required: false }]}
-        >
-          <Select placeholder="Select partner provider (optional)" allowClear>
-            {providers.map((p) => (
-              <Select.Option key={p.id} value={p.id}>
-                {p.full_name} ({p.mobile})
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Partner Provider
+          </label>
+          <Controller
+            name="providerId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                placeholder="Select partner provider (optional)"
+                allowClear
+                style={{ width: "100%" }}
+                size="large"
+              >
+                {providers.map((p) => (
+                  <Select.Option key={p.id} value={p.id}>
+                    {p.full_name} ({p.mobile})
+                  </Select.Option>
+                ))}
+              </Select>
+            )}
+          />
+        </div>
 
         {providers.length === 0 && (
           <div
@@ -153,253 +298,324 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
-              name="price"
-              label="Base Price (INR)"
-              rules={[{ required: true, message: "Price is required" }]}
-            >
-              <InputNumber
-                style={{ width: "100%" }}
-                min={0}
-                prefix="₹"
-                placeholder="499"
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Base Price (INR) *
+              </label>
+              <Controller
+                name="price"
+                control={control}
+                rules={{ required: "Price is required" }}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    style={{ width: "100%" }}
+                    min={0}
+                    prefix="₹"
+                    placeholder="499"
+                    size="large"
+                  />
+                )}
               />
-            </Form.Item>
+              {errors.price && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.price.message}
+                </span>
+              )}
+            </div>
           </Col>
           <Col span={12}>
-            <Form.Item
-              name="strikePrice"
-              label="Strike Price (INR)"
-              rules={[{ required: true, message: "Strike price is required" }]}
-            >
-              <InputNumber
-                style={{ width: "100%" }}
-                min={0}
-                prefix="₹"
-                placeholder="699"
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Strike Price (INR) *
+              </label>
+              <Controller
+                name="strikePrice"
+                control={control}
+                rules={{ required: "Strike price is required" }}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    style={{ width: "100%" }}
+                    min={0}
+                    prefix="₹"
+                    placeholder="699"
+                    size="large"
+                  />
+                )}
               />
-            </Form.Item>
+              {errors.strikePrice && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.strikePrice.message}
+                </span>
+              )}
+            </div>
           </Col>
         </Row>
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="weight" label="Sort Weight">
-              <InputNumber style={{ width: "100%" }} min={0} />
-            </Form.Item>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sort Weight
+              </label>
+              <Controller
+                name="weight"
+                control={control}
+                render={({ field }) => (
+                  <InputNumber {...field} style={{ width: "100%" }} min={0} size="large" />
+                )}
+              />
+            </div>
           </Col>
           <Col span={12}>
-            <Form.Item name="serviceType" label="Service Type">
-              <Select>
-                <Select.Option value="b2c">B2C (Consumer)</Select.Option>
-                <Select.Option value="b2b">B2B (Business)</Select.Option>
-              </Select>
-            </Form.Item>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Service Type
+              </label>
+              <Controller
+                name="serviceType"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} style={{ width: "100%" }} size="large">
+                    <Select.Option value="b2c">B2C (Consumer)</Select.Option>
+                    <Select.Option value="b2b">B2B (Business)</Select.Option>
+                  </Select>
+                )}
+              />
+            </div>
           </Col>
         </Row>
 
         <Row gutter={8} style={{ marginTop: "0.5rem" }}>
           <Col span={8}>
-            <Form.Item
-              name="recommended"
-              label="Recommended"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Recommended
+              </label>
+              <Controller
+                name="recommended"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Switch checked={value} onChange={onChange} style={{ display: 'block' }} />
+                )}
+              />
+            </div>
           </Col>
           <Col span={8}>
-            <Form.Item
-              name="bestDeal"
-              label="Best Deal"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Best Deal
+              </label>
+              <Controller
+                name="bestDeal"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Switch checked={value} onChange={onChange} style={{ display: 'block' }} />
+                )}
+              />
+            </div>
           </Col>
           <Col span={8}>
-            <Form.Item
-              name="active"
-              label="Active Card"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Active Card
+              </label>
+              <Controller
+                name="active"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Switch checked={value} onChange={onChange} style={{ display: 'block' }} />
+                )}
+              />
+            </div>
           </Col>
         </Row>
 
         <Divider style={{ margin: "1rem 0" }}>Media Assets</Divider>
 
         {/* Rate Card Images */}
-        <Form.Item label="Rate Card Images">
-          <Form.List name="images">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Rate Card Images
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {imageFields.map((field, index) => (
+              <div
+                key={field.id}
+                style={{
+                  padding: "0.75rem",
+                  border: "1px solid var(--color-line)",
+                  borderRadius: "4px",
+                  background: "rgba(0,0,0,0.01)",
+                }}
+              >
+                <Row gutter={8} align="middle">
+                  <Col span={16}>
+                    <Controller
+                      name={`images.${index}`}
+                      control={control}
+                      render={({ field: imageField }) => (
+                        <Input {...imageField} placeholder="Image URL or upload a file" size="large" />
+                      )}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Space>
+                      <Upload
+                        accept="image/*"
+                        beforeUpload={(file) => {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            setValue(`images.${index}`, reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                          return false;
+                        }}
+                        showUploadList={false}
+                      >
+                        <Button icon={<UploadOutlined />} size="small">
+                          Upload
+                        </Button>
+                      </Upload>
+                      <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        onClick={() => removeImage(index)}
+                      />
+                    </Space>
+                  </Col>
+                </Row>
+                {imagesValue?.[index] && (
                   <div
-                    key={key}
                     style={{
-                      marginBottom: "1rem",
-                      padding: "0.75rem",
-                      border: "1px solid var(--color-line)",
+                      marginTop: "0.5rem",
+                      textAlign: "center",
+                      background: "#fafafa",
+                      padding: "4px",
                       borderRadius: "4px",
-                      background: "rgba(0,0,0,0.01)",
+                      border: "1px dashed #e8e8e8",
                     }}
                   >
-                    <Row gutter={8} align="middle">
-                      <Col span={16}>
-                        <Form.Item {...restField} name={[name]} noStyle>
-                          <Input placeholder="Image URL or upload a file" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Space>
-                          <Upload
-                            accept="image/*"
-                            beforeUpload={(file) => {
-                              const reader = new FileReader();
-                              reader.onload = () => {
-                                const list = form.getFieldValue("images") || [];
-                                list[name] = reader.result as string;
-                                form.setFieldsValue({ images: [...list] });
-                              };
-                              reader.readAsDataURL(file);
-                              return false;
-                            }}
-                            showUploadList={false}
-                          >
-                            <Button icon={<UploadOutlined />} size="small">
-                              Upload
-                            </Button>
-                          </Upload>
-                          <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            size="small"
-                            onClick={() => remove(name)}
-                          />
-                        </Space>
-                      </Col>
-                    </Row>
-                    {imagesValue?.[name] && (
-                      <div
-                        style={{
-                          marginTop: "0.5rem",
-                          textAlign: "center",
-                          background: "#fafafa",
-                          padding: "4px",
-                          borderRadius: "4px",
-                          border: "1px dashed #e8e8e8",
-                        }}
-                      >
-                        <img
-                          src={imagesValue[name]}
-                          alt={`Preview ${name + 1}`}
-                          style={{ maxHeight: "100px", objectFit: "contain" }}
-                        />
-                      </div>
-                    )}
+                    <img
+                      src={imagesValue[index]}
+                      alt={`Preview ${index + 1}`}
+                      style={{ maxHeight: "100px", objectFit: "contain" }}
+                    />
                   </div>
-                ))}
-                <Form.Item style={{ marginBottom: "0.5rem" }}>
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    block
-                    icon={<PictureOutlined />}
-                  >
-                    Add Image URL or File
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Form.Item>
+                )}
+              </div>
+            ))}
+            <Button
+              type="dashed"
+              onClick={() => appendImage("")}
+              block
+              icon={<PictureOutlined />}
+              size="large"
+            >
+              Add Image URL or File
+            </Button>
+          </div>
+        </div>
 
         {/* Rate Card Videos */}
-        <Form.Item label="Rate Card Videos">
-          <Form.List name="videos">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Rate Card Videos
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {videoFields.map((field, index) => (
+              <div
+                key={field.id}
+                style={{
+                  padding: "0.75rem",
+                  border: "1px solid var(--color-line)",
+                  borderRadius: "4px",
+                  background: "rgba(0,0,0,0.01)",
+                }}
+              >
+                <Row gutter={8} align="middle">
+                  <Col span={16}>
+                    <Controller
+                      name={`videos.${index}`}
+                      control={control}
+                      render={({ field: videoField }) => (
+                        <Input {...videoField} placeholder="Video URL or upload a file" size="large" />
+                      )}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Space>
+                      <Upload
+                        accept="video/*"
+                        beforeUpload={(file) => {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            setValue(`videos.${index}`, reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                          return false;
+                        }}
+                        showUploadList={false}
+                      >
+                        <Button icon={<UploadOutlined />} size="small">
+                          Upload
+                        </Button>
+                      </Upload>
+                      <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        onClick={() => removeVideo(index)}
+                      />
+                    </Space>
+                  </Col>
+                </Row>
+                {videosValue?.[index] && (
                   <div
-                    key={key}
                     style={{
-                      marginBottom: "1rem",
-                      padding: "0.75rem",
-                      border: "1px solid var(--color-line)",
+                      marginTop: "0.5rem",
+                      background: "#000",
                       borderRadius: "4px",
-                      background: "rgba(0,0,0,0.01)",
+                      overflow: "hidden",
                     }}
                   >
-                    <Row gutter={8} align="middle">
-                      <Col span={16}>
-                        <Form.Item {...restField} name={[name]} noStyle>
-                          <Input placeholder="Video URL or upload a file" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Space>
-                          <Upload
-                            accept="video/*"
-                            beforeUpload={(file) => {
-                              const reader = new FileReader();
-                              reader.onload = () => {
-                                const list = form.getFieldValue("videos") || [];
-                                list[name] = reader.result as string;
-                                form.setFieldsValue({ videos: [...list] });
-                              };
-                              reader.readAsDataURL(file);
-                              return false;
-                            }}
-                            showUploadList={false}
-                          >
-                            <Button icon={<UploadOutlined />} size="small">
-                              Upload
-                            </Button>
-                          </Upload>
-                          <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            size="small"
-                            onClick={() => remove(name)}
-                          />
-                        </Space>
-                      </Col>
-                    </Row>
-                    {videosValue?.[name] && (
-                      <div
-                        style={{
-                          marginTop: "0.5rem",
-                          background: "#000",
-                          borderRadius: "4px",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <video
-                          src={videosValue[name]}
-                          controls
-                          style={{ width: "100%", maxHeight: "120px" }}
-                        />
-                      </div>
-                    )}
+                    <video
+                      src={videosValue[index]}
+                      controls
+                      style={{ width: "100%", maxHeight: "120px" }}
+                    />
                   </div>
-                ))}
-                <Form.Item style={{ marginBottom: 0 }}>
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    block
-                    icon={<PlayCircleOutlined />}
-                  >
-                    Add Video URL or File
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Form.Item>
-      </Form>
+                )}
+              </div>
+            ))}
+            <Button
+              type="dashed"
+              onClick={() => appendVideo("")}
+              block
+              icon={<PlayCircleOutlined />}
+              size="large"
+            >
+              Add Video URL or File
+            </Button>
+          </div>
+        </div>
+
+        {/* Action Form Footer */}
+        <div className="flex justify-end space-x-2 mt-8">
+          <Button size="large" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+          >
+            Save Rate Card
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 };
