@@ -267,45 +267,6 @@ export const ProvidersTab: React.FC = () => {
         </Button>
       </div>
 
-      {/* Filter panel designed like Screenshot 1 */}
-      <div
-        className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-white border rounded mb-6 shadow-sm"
-        style={{
-          backgroundColor: '#FFF',
-          padding: '1rem 1.5rem',
-          borderColor: 'var(--color-line)',
-          borderRadius: '4px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-        }}
-      >
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          <strong style={{ fontSize: '1rem', color: 'var(--color-ink)' }}>Search:</strong>
-          <Input
-            placeholder="Search provider..."
-            prefix={<LuSearch size={15} style={{ color: 'var(--color-mute)' }} />}
-            value={providerSearch}
-            onChange={(e) => {
-              setProviderSearch(e.target.value);
-            }}
-            className="w-full sm:w-[220px]"
-            style={{ height: '38px', borderRadius: '4px' }}
-          />
-          <Select
-            defaultValue="all"
-            className="w-full sm:w-[130px]"
-            style={{ height: '38px' }}
-            onChange={value => {
-              setProviderGenderFilter(value);
-            }}
-          >
-            <Select.Option value="all">All Genders</Select.Option>
-            <Select.Option value="male">Male</Select.Option>
-            <Select.Option value="female">Female</Select.Option>
-            <Select.Option value="other">Other</Select.Option>
-          </Select>
-        </div>
-      </div>
-
       {/* Providers Table */}
       <Table
         columns={columns}
