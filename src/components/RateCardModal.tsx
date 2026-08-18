@@ -159,8 +159,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
     >
       <form
         onSubmit={handleSubmit(onSave)}
-        className="space-y-4 mt-4"
-        style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}
+        className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -199,7 +198,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                       setValue("subcategoryId", "");
                       setRateCardSelectedCategory(val);
                     }}
-                    style={{ width: "100%" }}
+                    className="w-full"
                     size="large"
                   >
                     {rootCategories.map((r) => (
@@ -230,7 +229,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                   <Select
                     {...field}
                     disabled={!rateCardSelectedCategory}
-                    style={{ width: "100%" }}
+                    className="w-full"
                     size="large"
                   >
                     {categories?.length &&
@@ -265,7 +264,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 {...field}
                 placeholder="Select partner provider (optional)"
                 allowClear
-                style={{ width: "100%" }}
+                className="w-full"
                 size="large"
               >
                 {providers.map((p) => (
@@ -280,15 +279,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
 
         {providers.length === 0 && (
           <div
-            style={{
-              margin: "-0.5rem 0 1.25rem 0",
-              padding: "8px 12px",
-              background: "#FFF7E6",
-              border: "1px solid #FFE58F",
-              borderRadius: "4px",
-              fontSize: "0.85rem",
-              color: "#D46B08",
-            }}
+            className="-mt-2 mb-5 py-2 px-3 bg-[#FFF7E6] border border-[#FFE58F] rounded text-[0.85rem] text-[#D46B08]"
           >
             ⚠️ <strong>No providers onboarded:</strong> To link a service
             partner, please onboard a provider in the <strong>Providers</strong>{" "}
@@ -309,7 +300,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 render={({ field }) => (
                   <InputNumber
                     {...field}
-                    style={{ width: "100%" }}
+                    className="w-full"
                     min={0}
                     prefix="₹"
                     placeholder="499"
@@ -336,7 +327,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 render={({ field }) => (
                   <InputNumber
                     {...field}
-                    style={{ width: "100%" }}
+                    className="w-full"
                     min={0}
                     prefix="₹"
                     placeholder="699"
@@ -363,7 +354,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 name="weight"
                 control={control}
                 render={({ field }) => (
-                  <InputNumber {...field} style={{ width: "100%" }} min={0} size="large" />
+                  <InputNumber {...field} className="w-full" min={0} size="large" />
                 )}
               />
             </div>
@@ -377,7 +368,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 name="serviceType"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} style={{ width: "100%" }} size="large">
+                  <Select {...field} className="w-full" size="large">
                     <Select.Option value="b2c">B2C (Consumer)</Select.Option>
                     <Select.Option value="b2b">B2B (Business)</Select.Option>
                   </Select>
@@ -387,7 +378,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
           </Col>
         </Row>
 
-        <Row gutter={8} style={{ marginTop: "0.5rem" }}>
+        <Row gutter={8} className="mt-2">
           <Col span={8}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -397,7 +388,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 name="recommended"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} style={{ display: 'block' }} />
+                  <Switch checked={value} onChange={onChange} className="block" />
                 )}
               />
             </div>
@@ -411,7 +402,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 name="bestDeal"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} style={{ display: 'block' }} />
+                  <Switch checked={value} onChange={onChange} className="block" />
                 )}
               />
             </div>
@@ -425,30 +416,25 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 name="active"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} style={{ display: 'block' }} />
+                  <Switch checked={value} onChange={onChange} className="block" />
                 )}
               />
             </div>
           </Col>
         </Row>
 
-        <Divider style={{ margin: "1rem 0" }}>Media Assets</Divider>
+        <Divider className="!my-4">Media Assets</Divider>
 
         {/* Rate Card Images */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Rate Card Images
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="flex flex-col gap-4">
             {imageFields.map((field, index) => (
               <div
                 key={field.id}
-                style={{
-                  padding: "0.75rem",
-                  border: "1px solid var(--color-line)",
-                  borderRadius: "4px",
-                  background: "rgba(0,0,0,0.01)",
-                }}
+                className="p-3 border border-line rounded bg-[rgba(0,0,0,0.01)]"
               >
                 <Row gutter={8} align="middle">
                   <Col span={16}>
@@ -489,19 +475,12 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 </Row>
                 {imagesValue?.[index] && (
                   <div
-                    style={{
-                      marginTop: "0.5rem",
-                      textAlign: "center",
-                      background: "#fafafa",
-                      padding: "4px",
-                      borderRadius: "4px",
-                      border: "1px dashed #e8e8e8",
-                    }}
+                    className="mt-2 text-center bg-[#fafafa] p-1 rounded border border-dashed border-[#e8e8e8]"
                   >
                     <img
                       src={imagesValue[index]}
                       alt={`Preview ${index + 1}`}
-                      style={{ maxHeight: "100px", objectFit: "contain" }}
+                      className="max-h-[100px] object-contain mx-auto"
                     />
                   </div>
                 )}
@@ -524,16 +503,11 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Rate Card Videos
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="flex flex-col gap-4">
             {videoFields.map((field, index) => (
               <div
                 key={field.id}
-                style={{
-                  padding: "0.75rem",
-                  border: "1px solid var(--color-line)",
-                  borderRadius: "4px",
-                  background: "rgba(0,0,0,0.01)",
-                }}
+                className="p-3 border border-line rounded bg-[rgba(0,0,0,0.01)]"
               >
                 <Row gutter={8} align="middle">
                   <Col span={16}>
@@ -574,17 +548,12 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                 </Row>
                 {videosValue?.[index] && (
                   <div
-                    style={{
-                      marginTop: "0.5rem",
-                      background: "#000",
-                      borderRadius: "4px",
-                      overflow: "hidden",
-                    }}
+                    className="mt-2 bg-black rounded overflow-hidden"
                   >
                     <video
                       src={videosValue[index]}
                       controls
-                      style={{ width: "100%", maxHeight: "120px" }}
+                      className="w-full max-h-[120px]"
                     />
                   </div>
                 )}

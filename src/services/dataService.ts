@@ -101,278 +101,38 @@ function toSlug(text: string): string {
     .replace(/-+/g, '-');            // collapse multiple hyphens
 }
 
-// ─── INITIALIZATION DATA ──────────────────────────────────────────────────────
 
-const INITIAL_CATEGORY_GROUPS = [
-  {
-    name: "Style",
-    description: "Find your aesthetic",
-    categories: [
-      "Quiet Luxury", "Minimalist", "Contemporary Chic", "Streetwear",
-      "Classic & Formal", "Bohemian", "Romantic Feminine",
-      "Edgy & Avant-Garde", "Glamour & Evening", "Sustainable Fashion",
-    ],
-  },
-  {
-    name: "Occasion",
-    description: "Dress the moment",
-    categories: [
-      "Wedding Guest", "Bridal", "Reception", "Cocktail Party",
-      "Vacation", "Honeymoon", "Corporate & Business",
-      "Date Night", "Festive", "Photoshoot",
-      "Content Creator", "Red Carpet",
-    ],
-  },
-  {
-    name: "For",
-    description: "Styling by demographic",
-    categories: [
-      "Women's Fashion", "Men's Fashion", "Teen", "Plus Size",
-      "Maternity", "Mature & Elegant",
-    ],
-  },
-  {
-    name: "Lifestyle",
-    description: "How you live",
-    categories: [
-      "Corporate Professional", "Entrepreneur & Founder", "Creative Professional",
-      "Luxury Lifestyle", "Frequent Traveler", "Socialite & Events", "Influencer & Creator",
-    ],
-  },
-  {
-    name: "Budget",
-    description: "Tier of service",
-    categories: [
-      "Affordable (₹2k–₹5k)", "Premium (₹5k–₹15k)",
-      "Luxury (₹15k+)", "Ultra Luxury Concierge (₹50k+)",
-    ],
-  },
-  {
-    name: "Expertise",
-    description: "Specialist services",
-    categories: [
-      "Personal Shopper", "Wardrobe Audit", "Color Analysis",
-      "Body Shape Specialist", "Luxury Fashion Consultant",
-      "Sustainable Fashion Consultant", "Bridal Fashion Expert", "Image Consultant",
-    ],
-  },
-  {
-    name: "Aesthetic",
-    description: "Mood & destination",
-    categories: [
-      "Old Money", "Parisian", "Scandinavian", "Coastal Chic",
-      "Italian Luxury", "Korean Minimalist", "Japanese Contemporary",
-      "Modern Indian", "Power Dressing", "Resort Luxury",
-    ],
-  },
-];
-
-const INITIAL_PROVIDERS: Provider[] = [
-  {
-    id: "prov_aria",
-    full_name: "Aria Lavigne",
-    email: "aria.provider@example.com",
-    mobile: "+919876543210",
-    gender: "female",
-    birth_date: "1992-04-18T00:00:00.000Z",
-    address: "Flat 4B, Pali Hill, Mumbai",
-    isActive: true
-  },
-  {
-    id: "prov_milan",
-    full_name: "Milan Okafor",
-    email: "milan.provider@example.com",
-    mobile: "+919876543299",
-    gender: "male",
-    birth_date: "1988-11-23T00:00:00.000Z",
-    address: "12/A Ring Road, New Delhi",
-    isActive: true
-  },
-  {
-    id: "prov_sole",
-    full_name: "Sole Marchetti",
-    email: "sole.provider@example.com",
-    mobile: "+919876543311",
-    gender: "female",
-    birth_date: "1990-09-05T00:00:00.000Z",
-    address: "88 Orchid Enclave, Bangalore",
-    isActive: true
-  }
-];
-
-const INITIAL_RATE_CARDS: RateCard[] = [
-  {
-    id: "rc_01",
-    name: "Standard Split AC Service",
-    categoryId: "cat_style",
-    subcategoryId: "sub_cat_style_quiet-luxury",
-    providerId: "prov_aria",
-    price: 499.00,
-    strikePrice: 699.00,
-    weight: 1,
-    recommended: true,
-    bestDeal: false,
-    active: true,
-    serviceType: "b2c"
-  },
-  {
-    id: "rc_02",
-    name: "Premium Menswear Consultation",
-    categoryId: "cat_style",
-    subcategoryId: "sub_cat_style_minimalist",
-    providerId: "prov_milan",
-    price: 1500.00,
-    strikePrice: 2000.00,
-    weight: 2,
-    recommended: true,
-    bestDeal: true,
-    active: true,
-    serviceType: "b2c"
-  }
-];
-
-const INITIAL_ORDERS: IntakeRequest[] = [
-  {
-    id: "req_01",
-    user_id: "user_aditi",
-    user_email: "aditi.r@example.com",
-    user_name: "Aditi R.",
-    occasion: "Everyday Corporate Capsule",
-    budget: "Premium (₹5k–₹15k)",
-    gender: "Women",
-    style_preference: "Quiet luxury",
-    body_type: "Hourglass",
-    city: "Mumbai",
-    notes: "Need a high-quality corporate professional capsule for my new venture. Clean lines and solid colors only.",
-    photo_ids: ["https://images.unsplash.com/photo-1509319117193-57bab727e09d"],
-    status: "completed",
-    assigned_stylist_id: "prov_aria",
-    created_at: "2026-08-01T10:00:00.000Z",
-  },
-  {
-    id: "req_02",
-    user_id: "user_raj",
-    user_email: "raj.m@example.com",
-    user_name: "Raj Malhotra",
-    occasion: "Cocktail Party",
-    budget: "Luxury (₹15k+)",
-    gender: "Men",
-    style_preference: "Contemporary Chic",
-    body_type: "Rectangle",
-    city: "New Delhi",
-    notes: "Something modern and standout for a gallery opening dinner. No formal black suits.",
-    photo_ids: ["https://images.unsplash.com/photo-1617137968427-85924c800a22"],
-    status: "assigned",
-    assigned_stylist_id: "prov_milan",
-    created_at: "2026-08-10T14:30:00.000Z",
-  },
-  {
-    id: "req_03",
-    user_id: "user_kiran",
-    user_email: "kiran.d@example.com",
-    user_name: "Kiran Devi",
-    occasion: "Resort Vacation",
-    budget: "Affordable (₹2k–₹5k)",
-    gender: "Women",
-    style_preference: "Bohemian",
-    body_type: "Plus Size",
-    city: "Goa",
-    notes: "Comfortable resort wear for my upcoming trip to Goa. Breathable fabrics like linens are preferred.",
-    photo_ids: [],
-    status: "pending",
-    assigned_stylist_id: null,
-    created_at: "2026-08-15T08:00:00.000Z",
-  }
-];
-
-const INITIAL_LOOKBOOKS: Lookbook[] = [
-  {
-    id: "lb_01",
-    intake_id: "req_01",
-    stylist_user_id: "prov_aria",
-    intro_note: "Here is your quiet luxury capsule edit. We focused on highly-structured modular tailoring in shades of sand, espresso, and ivory. Each piece transitions seamlessly from day to evening meetings.",
-    items: [
-      {
-        id: "item_01",
-        title: "Sand Structured Blazer",
-        description: "Double-breasted silk wool blend blazer. Sharp shoulders and classic lapels for a strong presence.",
-        image_url: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=256",
-        product_link: "https://quvo.co.in/shop/blazer",
-        price: "₹18,500",
-        category: "top"
-      },
-      {
-        id: "item_02",
-        title: "Ivory Wide-Leg Trousers",
-        description: "High-waisted draped wool trousers. Elegant length that moves gracefully.",
-        image_url: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=256",
-        product_link: "https://quvo.co.in/shop/trousers",
-        price: "₹12,000",
-        category: "bottom"
-      },
-      {
-        id: "item_03",
-        title: "Leather Saddle Loafers",
-        description: "Italian calfskin leather loafers in rich espresso brown. Perfect comfort with sharp lines.",
-        image_url: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?q=80&w=256",
-        product_link: "https://quvo.co.in/shop/shoes",
-        price: "₹9,500",
-        category: "shoes"
-      }
-    ],
-    created_at: "2026-08-02T11:00:00.000Z",
-    updated_at: "2026-08-02T11:00:00.000Z"
-  }
-];
 
 // Initialize localStorage if keys do not exist
 export function initializeDB() {
-  if (!localStorage.getItem('quvo_categories')) {
-    const categories: Category[] = [];
-    INITIAL_CATEGORY_GROUPS.forEach((group, idx) => {
-      const parentId = `cat_${toSlug(group.name)}`;
-      categories.push({
-        id: parentId,
-        name: group.name,
-        slug: toSlug(group.name),
-        description: group.description,
-        sortOrder: idx + 1,
-        isActive: true,
-        parentId: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+  const versionKey = 'quvo_db_clean_v1';
+  if (!localStorage.getItem(versionKey)) {
+    localStorage.removeItem('quvo_categories');
+    localStorage.removeItem('quvo_providers');
+    localStorage.removeItem('quvo_rate_cards');
+    localStorage.removeItem('quvo_orders');
+    localStorage.removeItem('quvo_lookbooks');
+    localStorage.setItem(versionKey, 'true');
+  }
 
-      group.categories.forEach((sub, subIdx) => {
-        categories.push({
-          id: `sub_cat_${toSlug(group.name)}_${toSlug(sub)}`,
-          name: sub,
-          slug: toSlug(sub),
-          sortOrder: subIdx + 1,
-          isActive: true,
-          parentId: parentId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      });
-    });
-    localStorage.setItem('quvo_categories', JSON.stringify(categories));
+  if (!localStorage.getItem('quvo_categories')) {
+    localStorage.setItem('quvo_categories', JSON.stringify([]));
   }
 
   if (!localStorage.getItem('quvo_providers')) {
-    localStorage.setItem('quvo_providers', JSON.stringify(INITIAL_PROVIDERS));
+    localStorage.setItem('quvo_providers', JSON.stringify([]));
   }
 
   if (!localStorage.getItem('quvo_rate_cards')) {
-    localStorage.setItem('quvo_rate_cards', JSON.stringify(INITIAL_RATE_CARDS));
+    localStorage.setItem('quvo_rate_cards', JSON.stringify([]));
   }
 
   if (!localStorage.getItem('quvo_orders')) {
-    localStorage.setItem('quvo_orders', JSON.stringify(INITIAL_ORDERS));
+    localStorage.setItem('quvo_orders', JSON.stringify([]));
   }
 
   if (!localStorage.getItem('quvo_lookbooks')) {
-    localStorage.setItem('quvo_lookbooks', JSON.stringify(INITIAL_LOOKBOOKS));
+    localStorage.setItem('quvo_lookbooks', JSON.stringify([]));
   }
 }
 

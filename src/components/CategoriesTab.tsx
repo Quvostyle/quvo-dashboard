@@ -156,26 +156,21 @@ export const CategoriesTab: React.FC = () => {
         const record = row.original;
         const isSub = !!record.parentId;
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="flex items-center gap-3">
             {!isSub && record.icon ? (
-              <img src={record.icon} alt={record.name} style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--color-line)' }} />
+              <img src={record.icon} alt={record.name} className="w-9 h-9 object-contain rounded border border-line" />
             ) : null}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-              <span style={{
-                fontWeight: isSub ? 500 : 700,
-                fontSize: isSub ? '0.9rem' : '1rem',
-                color: record.isActive ? 'var(--color-ink)' : 'var(--color-mute)',
-                textDecoration: record.isActive ? 'none' : 'line-through'
-              }}>
+            <div className="flex flex-col gap-0.5">
+              <span className={`${isSub ? 'font-medium text-[0.9rem]' : 'font-bold text-[1rem]'} ${record.isActive ? 'text-ink no-underline' : 'text-mute line-through'}`}>
                 {record.name}
               </span>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {isSub ? <Tag color="cyan" style={{ margin: 0, fontSize: '0.68rem', lineHeight: '1.2' }}>Subcategory</Tag> : <Tag color="blue" style={{ margin: 0, fontSize: '0.68rem', lineHeight: '1.2' }}>Parent Group</Tag>}
+              <div className="text-xs text-mute flex items-center gap-2">
+                {isSub ? <Tag color="cyan" className="!m-0 text-[0.68rem] leading-[1.2]">Subcategory</Tag> : <Tag color="blue" className="!m-0 text-[0.68rem] leading-[1.2]">Parent Group</Tag>}
                 <span>•</span>
                 <span>Order: {record.sortOrder}</span>
               </div>
               {record.description && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', fontStyle: 'italic', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={record.description}>
+                <span className="text-[0.8rem] text-mute italic max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={record.description}>
                   {record.description}
                 </span>
               )}
@@ -190,10 +185,10 @@ export const CategoriesTab: React.FC = () => {
       Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
-            <div><Tag color="orange" style={{ fontFamily: 'monospace', margin: 0 }}>{record.slug}</Tag></div>
+          <div className="flex flex-col gap-1 text-[0.85rem]">
+            <div><Tag color="orange" className="font-mono !m-0">{record.slug}</Tag></div>
             {record.videos?.length > 0 ? (
-              <div style={{ fontSize: '0.72rem', color: 'var(--color-mute)' }}>🎥 {record.videos.length} Videos</div>
+              <div className="text-[0.72rem] text-mute">🎥 {record.videos.length} Videos</div>
             ) : null}
           </div>
         );
@@ -258,21 +253,21 @@ export const CategoriesTab: React.FC = () => {
   if (categoriesLoading) {
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div className="mb-8 flex justify-between items-baseline">
           <div>
-            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <Skeleton.Button active className="!w-[120px] !h-3.5 !mb-2" />
             <br />
-            <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+            <Skeleton.Input active className="!w-[380px] !h-10" />
           </div>
-          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+          <Skeleton.Button active className="!w-[150px] !h-10" />
         </div>
 
         {/* Table Page Skeleton */}
         <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
           {/* Mock Search/Filter Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
-            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          <div className="flex justify-between mb-6">
+            <Skeleton.Input active className="!w-[260px] !h-9" />
+            <Skeleton.Input active className="!w-[180px] !h-9" />
           </div>
           {/* Mock Table Rows */}
           <Skeleton active paragraph={{ rows: 8 }} />
@@ -302,7 +297,7 @@ export const CategoriesTab: React.FC = () => {
       <Table
         columns={columns}
         data={categories}
-        pageSize={10}
+        pageSize={20}
         expandable={true}
       />
 

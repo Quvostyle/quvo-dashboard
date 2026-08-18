@@ -141,7 +141,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     >
       <div>
         {/* Status & Stylist Panel */}
-        <Row gutter={16} style={{ background: 'rgba(184, 148, 106, 0.04)', padding: '1.25rem', border: '1px solid var(--color-line)', marginBottom: '1.5rem' }}>
+        <Row gutter={16} className="bg-[rgba(184,148,106,0.04)] p-5 border border-line mb-6">
           <Col span={12}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -150,7 +150,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               <Select
                 value={selectedOrder.status}
                 onChange={handleUpdateOrderStatus}
-                style={{ width: '100%' }}
+                className="w-full"
                 size="large"
               >
                 <Select.Option value="pending">Pending Review</Select.Option>
@@ -168,7 +168,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               <Select
                 value={selectedOrder.assigned_stylist_id || ''}
                 onChange={handleAssignStylist}
-                style={{ width: '100%' }}
+                className="w-full"
                 size="large"
               >
                 <Select.Option value="">[Unassigned] Move to Pending</Select.Option>
@@ -181,7 +181,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         </Row>
 
         {/* Profile descriptions */}
-        <Descriptions title="Client Profiling Parameters" bordered size="small" column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }} style={{ marginBottom: '1.5rem' }}>
+        <Descriptions title="Client Profiling Parameters" bordered size="small" column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }} className="mb-6">
           <Descriptions.Item label="Client">{selectedOrder.user_name}</Descriptions.Item>
           <Descriptions.Item label="Email">{selectedOrder.user_email}</Descriptions.Item>
           <Descriptions.Item label="City Location">{selectedOrder.city}</Descriptions.Item>
@@ -193,16 +193,16 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         </Descriptions>
 
         {selectedOrder.notes && (
-          <div style={{ marginBottom: '1.5rem' }}>
-            <strong style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--color-mute)', letterSpacing: '0.08em' }}>Client Studio Notes</strong>
-            <p className="client-notes" style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>{selectedOrder.notes}</p>
+          <div className="mb-6">
+            <strong className="text-[0.72rem] uppercase text-mute tracking-[0.08em]">Client Studio Notes</strong>
+            <p className="client-notes mt-2 whitespace-pre-wrap">{selectedOrder.notes}</p>
           </div>
         )}
 
         {selectedOrder.photo_ids && selectedOrder.photo_ids.length > 0 && (
-          <div style={{ marginBottom: '1.5rem' }}>
-            <strong style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--color-mute)', letterSpacing: '0.08em' }}>Reference Inspiration Images</strong>
-            <div className="intake-images" style={{ marginTop: '0.5rem' }}>
+          <div className="mb-6">
+            <strong className="text-[0.72rem] uppercase text-mute tracking-[0.08em]">Reference Inspiration Images</strong>
+            <div className="intake-images mt-2">
               {selectedOrder.photo_ids.map((url, i) => (
                 <a href={url} target="_blank" rel="noreferrer" key={i}>
                   <img src={url} alt={`Reference ${i + 1}`} className="intake-image-preview" />
@@ -215,8 +215,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         {/* LOOKBOOK SECTION */}
         {selectedOrder.assigned_stylist_id ? (
           <div className="lookbook-section">
-            <Divider style={{ margin: '1.5rem 0' }} />
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem' }}>Compose Client Lookbook</h3>
+            <Divider className="!my-6" />
+            <h3 className="text-[1.3rem] mb-4">Compose Client Lookbook</h3>
 
             {activeOrderLookbook ? (
               <div>
@@ -239,10 +239,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 {/* Add Item form */}
                 <form
                   onSubmit={handleSubmit(handleAddLookbookItem)}
-                  style={{ background: 'rgba(127, 109, 94, 0.02)', padding: '1.25rem', border: '1px solid var(--color-line)', marginBottom: '1.5rem' }}
-                  className="space-y-4"
+                  className="bg-[rgba(127,109,94,0.02)] p-5 border border-line mb-6 space-y-4"
                 >
-                  <strong style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-mute)', marginBottom: '1rem' }}>Add Curated Clothing Piece</strong>
+                  <strong className="block text-[0.72rem] uppercase tracking-[0.05em] text-mute mb-4">Add Curated Clothing Piece</strong>
                   <Row gutter={16}>
                     <Col span={24}>
                       <div className="mb-4">
@@ -254,7 +253,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           control={control}
                           rules={{ required: 'Title is required' }}
                           render={({ field }) => (
-                            <Input {...field} placeholder="e.g. Tweed Overcoat" size="large" style={{ borderRadius: 0 }} />
+                            <Input {...field} placeholder="e.g. Tweed Overcoat" size="large" className="!rounded-none" />
                           )}
                         />
                         {errors.title && (
@@ -277,7 +276,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           control={control}
                           rules={{ required: true }}
                           render={({ field }) => (
-                            <Radio.Group {...field} style={{ marginTop: '0.25rem' }}>
+                            <Radio.Group {...field} className="mt-1">
                               <Space wrap>
                                 <Radio value="top">Topwear</Radio>
                                 <Radio value="bottom">Bottomwear</Radio>
@@ -302,7 +301,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           name="price"
                           control={control}
                           render={({ field }) => (
-                            <Input {...field} placeholder="e.g. ₹5,600" size="large" style={{ borderRadius: 0 }} />
+                            <Input {...field} placeholder="e.g. ₹5,600" size="large" className="!rounded-none" />
                           )}
                         />
                       </div>
@@ -317,7 +316,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           control={control}
                           rules={{ required: 'Image URL is required' }}
                           render={({ field }) => (
-                            <Input {...field} placeholder="Image Unsplash URL" size="large" style={{ borderRadius: 0 }} />
+                            <Input {...field} placeholder="Image Unsplash URL" size="large" className="!rounded-none" />
                           )}
                         />
                         {errors.image_url && (
@@ -337,7 +336,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       name="product_link"
                       control={control}
                       render={({ field }) => (
-                        <Input {...field} placeholder="Zara, HM, or designer shop link" size="large" style={{ borderRadius: 0 }} />
+                        <Input {...field} placeholder="Zara, HM, or designer shop link" size="large" className="!rounded-none" />
                       )}
                     />
                   </div>
@@ -350,12 +349,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       name="description"
                       control={control}
                       render={({ field }) => (
-                        <Input.TextArea {...field} placeholder="Describe style pairings..." rows={3} style={{ borderRadius: 0 }} />
+                        <Input.TextArea {...field} placeholder="Describe style pairings..." rows={3} className="!rounded-none" />
                       )}
                     />
                   </div>
 
-                  <div style={{ textAlign: 'right', marginTop: '1.5rem' }}>
+                  <div className="text-right mt-6">
                     <Button
                       type="primary"
                       htmlType="submit"
@@ -367,9 +366,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 </form>
 
                 {/* Items list */}
-                <strong style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-mute)', marginBottom: '0.75rem' }}>Curated Items ({activeOrderLookbook.items ? activeOrderLookbook.items.length : 0})</strong>
+                <strong className="block text-[0.72rem] uppercase tracking-[0.05em] text-mute mb-3">Curated Items ({activeOrderLookbook.items ? activeOrderLookbook.items.length : 0})</strong>
                 {!activeOrderLookbook.items || activeOrderLookbook.items.length === 0 ? (
-                  <div className="text-mute" style={{ textAlign: 'center', padding: '1.5rem 0', fontStyle: 'italic' }}>No recommendations added. Use form above to curate pieces.</div>
+                  <div className="text-center py-6 italic text-mute">No recommendations added. Use form above to curate pieces.</div>
                 ) : (
                   <div className="lookbook-item-list">
                     {activeOrderLookbook.items.map(item => (
@@ -377,16 +376,16 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <div className="lookbook-item-details">
                           <img src={item.image_url} alt={item.title} className="lookbook-item-img" />
                           <div>
-                            <strong style={{ color: 'var(--color-ink)' }}>{item.title}</strong>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)' }}>
-                              Price: {item.price || 'Price on request'} | Type: <span style={{ textTransform: 'uppercase', fontWeight: 600 }}>{item.category}</span>
+                            <strong className="text-ink">{item.title}</strong>
+                            <div className="text-xs text-mute">
+                              Price: {item.price || 'Price on request'} | Type: <span className="uppercase font-semibold">{item.category}</span>
                             </div>
-                            {item.description && <div style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '0.15rem' }}>Tip: {item.description}</div>}
+                            {item.description && <div className="text-[0.8rem] italic mt-0.5">Tip: {item.description}</div>}
                           </div>
                         </div>
                         <Space>
                           {item.product_link && (
-                            <a href={item.product_link} target="_blank" rel="noreferrer" title="Store link" style={{ color: 'var(--color-ink)' }}>
+                            <a href={item.product_link} target="_blank" rel="noreferrer" title="Store link" className="text-ink">
                               <LuExternalLink size={15} />
                             </a>
                           )}
@@ -409,7 +408,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         ) : (
           <div>
             <Divider />
-            <p className="text-mute" style={{ textAlign: 'center', fontStyle: 'italic' }}>
+            <p className="text-center italic text-mute">
               Assign a provider partner to curate recommendations for this client request.
             </p>
           </div>

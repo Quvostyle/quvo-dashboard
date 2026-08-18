@@ -21,7 +21,7 @@ import {
   LuMenu
 } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import { useGetOrdersQuery } from './store/apiSlice';
 
@@ -84,14 +84,29 @@ const DashboardRoutes: React.FC<{
     }, []);
 
     const sidebarContent = (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div className="sidebar-logo" style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start', padding: (collapsed && !isMobile) ? '0' : '0 1.25rem', gap: '0.5rem', borderBottom: '1px solid var(--color-line)', boxSizing: 'border-box' }}>
+      <div className="flex flex-col h-full">
+        <div className={`sidebar-logo h-[70px] flex items-center border-b border-line box-border ${collapsed && !isMobile ? 'justify-center p-0' : 'justify-between px-5'}`}>
           {(collapsed && !isMobile) ? (
-            <h2 style={{ fontSize: '1.6rem', margin: 0 }}>Q</h2>
+            <Button
+              type="text"
+              icon={<LuMenu size={22} />}
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-10 h-10 flex items-center justify-center rounded-lg text-ink hover:bg-[rgba(127,109,94,0.08)] !border-none"
+            />
           ) : (
             <>
-              <h2>Quvo</h2>
-              <span>Studio</span>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-serif !m-0">Quvo</h2>
+                <span className="text-[0.6rem] border border-gold text-gold px-1 font-medium uppercase tracking-wider">Studio</span>
+              </div>
+              {!isMobile && (
+                <Button
+                  type="text"
+                  icon={<LuMenu size={18} />}
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-ink hover:bg-[rgba(127,109,94,0.08)] !border-none"
+                />
+              )}
             </>
           )}
         </div>
@@ -115,14 +130,14 @@ const DashboardRoutes: React.FC<{
           ]}
         />
 
-        <div className="sidebar-user" style={{ padding: (collapsed && !isMobile) ? '1rem 0' : '1.25rem', flexDirection: (collapsed && !isMobile) ? 'column' : 'row', gap: (collapsed && !isMobile) ? '1rem' : '0', justifyContent: (collapsed && !isMobile) ? 'center' : 'space-between', borderTop: '1px solid var(--color-line)', marginTop: 'auto', background: 'rgba(127, 109, 94, 0.02)' }}>
+        <div className={`sidebar-user border-t border-line mt-auto bg-[rgba(127,109,94,0.02)] flex ${collapsed && !isMobile ? 'py-4 px-0 flex-col gap-4 justify-center' : 'p-5 flex-row gap-0 justify-between'}`}>
           {!(collapsed && !isMobile) ? (
             <div className="user-info">
               <span className="name">Admin User</span>
               <span className="role">Senior Producer</span>
             </div>
           ) : null}
-          <div className="logout-btn" title="Log Out" onClick={handleLogout} style={{ margin: (collapsed && !isMobile) ? '0 auto' : '0' }}>
+          <div className={`logout-btn ${collapsed && !isMobile ? 'mx-auto' : 'm-0'}`} title="Log Out" onClick={handleLogout}>
             <LuLogOut size={16} />
           </div>
         </div>
@@ -157,36 +172,20 @@ const DashboardRoutes: React.FC<{
         )}
 
         {/* RIGHT SIDE: HEADER + CONTENT */}
-        <Layout style={{ background: 'transparent' }}>
+        <Layout className="bg-transparent">
           <Header
-            style={{
-              background: 'var(--color-bone)',
-              borderBottom: '1px solid var(--color-line)',
-              padding: isMobile ? '0 1rem' : '0 2.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              height: '70px',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
-            }}
+            className={`!bg-bone !border-b !border-line flex items-center justify-between !h-[70px] !shadow-[0_1px_3px_rgba(0,0,0,0.02)] ${isMobile ? '!px-4' : '!px-10'}`}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <Button
-                type="text"
-                icon={<LuMenu size={20} />}
-                onClick={() => setCollapsed(!collapsed)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '8px',
-                  color: 'var(--color-ink)',
-                  backgroundColor: 'rgba(127, 109, 94, 0.05)'
-                }}
-              />
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-ink)', textTransform: 'capitalize' }}>
+            <div className="flex items-center gap-3">
+              {isMobile && (
+                <Button
+                  type="text"
+                  icon={<LuMenu size={20} />}
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="w-10 h-10 inline-flex items-center justify-center rounded-lg text-ink bg-[rgba(127,109,94,0.05)] mr-1"
+                />
+              )}
+              <h3 className="!m-0 font-serif text-[1.25rem] text-ink capitalize">
                 {tabTitles[currentKey] || 'Workspace'}
               </h3>
             </div>
@@ -287,7 +286,7 @@ function App() {
   };
 
   if (authLoading) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF8F3' }}>Loading Studio Configuration...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-paper">Loading Studio Configuration...</div>;
   }
 
   return (
@@ -331,7 +330,7 @@ function App() {
                       }
                     }}
                     render={({ field }) => (
-                      <Input {...field} prefix={<LuMail size={16} style={{ color: 'var(--color-mute)' }} />} placeholder="e.g. admin@quvo.in" />
+                      <Input {...field} prefix={<LuMail size={16} className="text-mute" />} placeholder="e.g. admin@quvo.in" />
                     )}
                   />
                   {errors.email && (
@@ -350,7 +349,7 @@ function App() {
                     control={control}
                     rules={{ required: 'Please input admin password.' }}
                     render={({ field }) => (
-                      <Input.Password {...field} prefix={<LuLock size={16} style={{ color: 'var(--color-mute)' }} />} placeholder="Enter password" />
+                      <Input.Password {...field} prefix={<LuLock size={16} className="text-mute" />} placeholder="Enter password" />
                     )}
                   />
                   {errors.password && (
@@ -364,7 +363,7 @@ function App() {
                 </div>
 
                 <div className="pt-2">
-                  <Button type="primary" htmlType="submit" block style={{ height: '42px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  <Button type="primary" htmlType="submit" block className="h-[42px] tracking-[0.08em] uppercase">
                     Enter Studio
                   </Button>
                 </div>
@@ -372,7 +371,7 @@ function App() {
             </Card>
           </div>
         ) : (
-          <HashRouter>
+          <BrowserRouter>
             <DashboardRoutes
               pendingOrdersCount={pendingOrdersCount}
               handleLogout={handleLogout}
@@ -382,7 +381,7 @@ function App() {
               setShowOrderModal={setShowOrderModal}
               setSelectedOrder={setSelectedOrder}
             />
-          </HashRouter>
+          </BrowserRouter>
         )}
       </div>
     </ConfigProvider>

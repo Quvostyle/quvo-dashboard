@@ -96,14 +96,9 @@ export const ProvidersTab: React.FC = () => {
           other: 'purple'
         };
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="flex items-center gap-3">
             <Avatar
-              style={{
-                backgroundColor: 'var(--color-ink)',
-                color: '#FFF8F0',
-                fontWeight: 700,
-                fontSize: '0.9rem'
-              }}
+              className="!bg-ink !text-[#FFF8F0] !font-bold !text-[0.9rem]"
               size={40}
             >
               {record.full_name ? record.full_name.charAt(0).toUpperCase() : 'P'}
@@ -111,20 +106,14 @@ export const ProvidersTab: React.FC = () => {
             <div>
               <a
                 href={`#provider-profile-${record.id}`}
-                style={{
-                  display: 'block',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  color: 'var(--color-gold)',
-                  textDecoration: 'none'
-                }}
+                className="block text-[0.95rem] font-semibold text-gold no-underline"
               >
                 {record.full_name}
               </a>
-              <div style={{ fontSize: '0.72rem', color: 'var(--color-mute)', marginTop: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div className="text-[0.72rem] text-mute mt-0.5 flex items-center gap-2 flex-wrap">
                 <span>ID: {record.id.slice(0, 8)}</span>
                 <span>•</span>
-                <Tag color={genderColors[record.gender] || 'default'} style={{ textTransform: 'capitalize', borderRadius: '10px', padding: '0 6px', fontSize: '0.68rem', lineHeight: '1.2', margin: 0 }}>
+                <Tag color={genderColors[record.gender] || 'default'} className="capitalize !rounded-[10px] !py-0 !px-1.5 text-[0.68rem] leading-[1.2] !m-0">
                   {record.gender}
                 </Tag>
                 <span>•</span>
@@ -141,20 +130,20 @@ export const ProvidersTab: React.FC = () => {
       Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+          <div className="flex flex-col gap-1 text-[0.85rem]">
             <div>
-              <a href={`mailto:${record.email}`} style={{ color: 'var(--color-gold)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', textDecoration: 'none' }}>
+              <a href={`mailto:${record.email}`} className="text-gold inline-flex items-center gap-1.5 no-underline">
                 <LuMail size={12} /> {record.email}
               </a>
             </div>
             <div>
-              <a href={`tel:${record.mobile}`} style={{ color: 'var(--color-gold)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', textDecoration: 'none' }}>
+              <a href={`tel:${record.mobile}`} className="text-gold inline-flex items-center gap-1.5 no-underline">
                 <LuPhone size={12} /> {record.mobile}
               </a>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', color: 'var(--color-mute)', maxWidth: '240px' }}>
-              <LuHouse size={12} style={{ marginTop: '3px', flexShrink: 0 }} />
-              <span style={{ fontSize: '0.8rem', lineHeight: '1.2' }} title={record.address}>{record.address}</span>
+            <div className="flex items-start gap-1 text-mute max-w-[240px]">
+              <LuHouse size={12} className="mt-0.5 shrink-0" />
+              <span className="text-[0.8rem] leading-[1.2]" title={record.address}>{record.address}</span>
             </div>
           </div>
         );
@@ -166,13 +155,7 @@ export const ProvidersTab: React.FC = () => {
       Cell: ({ value }: any) => (
         <Tag
           color={value ? 'success' : 'error'}
-          style={{
-            borderRadius: '12px',
-            fontSize: '0.72rem',
-            fontWeight: 600,
-            padding: '2px 10px',
-            border: `1px solid ${value ? '#b7eb8f' : '#ffa39e'}`
-          }}
+          className={`!rounded-[12px] !text-[0.72rem] !font-semibold !py-0.5 !px-2.5 !border ${value ? '!border-[#b7eb8f]' : '!border-[#ffa39e]'}`}
         >
           {value ? 'ACTIVE' : 'INACTIVE'}
         </Tag>
@@ -215,21 +198,21 @@ export const ProvidersTab: React.FC = () => {
   if (providersLoading) {
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div className="mb-8 flex justify-between items-baseline">
           <div>
-            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <Skeleton.Button active className="!w-[120px] !h-3.5 !mb-2" />
             <br />
-            <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+            <Skeleton.Input active className="!w-[380px] !h-10" />
           </div>
-          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+          <Skeleton.Button active className="!w-[150px] !h-10" />
         </div>
 
         {/* Table Page Skeleton */}
         <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
           {/* Mock Search/Filter Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
-            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          <div className="flex justify-between mb-6">
+            <Skeleton.Input active className="!w-[260px] !h-9" />
+            <Skeleton.Input active className="!w-[180px] !h-9" />
           </div>
           {/* Mock Table Rows */}
           <Skeleton active paragraph={{ rows: 8 }} />
@@ -243,7 +226,7 @@ export const ProvidersTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Providers Directory</p>
-          <h2 className="text-3xl font-bold" style={{ marginTop: '0.25rem' }}>Admin Service Providers</h2>
+          <h2 className="text-3xl font-bold mt-1">Admin Service Providers</h2>
         </div>
         <Button
           type="primary"
@@ -259,7 +242,7 @@ export const ProvidersTab: React.FC = () => {
       <Table
         columns={columns}
         data={providers}
-        pageSize={10}
+        pageSize={20}
       />
 
       <ProviderModal

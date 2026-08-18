@@ -25,24 +25,18 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+          <div className="flex flex-col gap-1">
             <a
               href={`#client-details-${record.id}`}
-              style={{
-                display: 'block',
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                color: 'var(--color-gold)',
-                textDecoration: 'none'
-              }}
+              className="block text-[0.95rem] font-semibold text-gold no-underline"
             >
               {record.user_name}
             </a>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)' }}>
+            <div className="text-xs text-mute">
               <code>{record.id.slice(0, 8)}</code> • {record.user_email}
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-mute)' }}>
-              Gender: <span style={{ textTransform: 'capitalize', color: 'var(--color-ink)', fontWeight: 500 }}>{record.gender}</span> • Budget: <strong style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-serif)' }}>{record.budget}</strong>
+            <div className="text-[0.8rem] text-mute">
+              Gender: <span className="capitalize text-ink font-medium">{record.gender}</span> • Budget: <strong className="text-ink font-serif">{record.budget}</strong>
             </div>
           </div>
         );
@@ -54,9 +48,9 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.85rem' }}>
-            <div><span style={{ color: 'var(--color-mute)' }}>Occasion:</span> <strong style={{ color: 'var(--color-ink)' }}>{record.occasion}</strong></div>
-            <div><span style={{ color: 'var(--color-mute)' }}>Location:</span> <span style={{ color: 'var(--color-ink)' }}>{record.location_preference}</span></div>
+          <div className="flex flex-col gap-1 text-[0.85rem]">
+            <div><span className="text-mute">Occasion:</span> <strong className="text-ink">{record.occasion}</strong></div>
+            <div><span className="text-mute">Location:</span> <span className="text-ink">{record.location_preference}</span></div>
           </div>
         );
       }
@@ -73,25 +67,19 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         if (record.status === 'completed') statusColor = 'success';
 
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.85rem' }}>
+          <div className="flex flex-col gap-1.5 text-[0.85rem]">
             <div>
-              <span style={{ color: 'var(--color-mute)' }}>Stylist:</span>{' '}
+              <span className="text-mute">Stylist:</span>{' '}
               {provider ? (
-                <strong style={{ color: 'var(--color-ink)' }}>{provider.full_name}</strong>
+                <strong className="text-ink">{provider.full_name}</strong>
               ) : (
-                <span style={{ color: 'var(--color-mute)', fontStyle: 'italic' }}>Unassigned</span>
+                <span className="text-mute italic">Unassigned</span>
               )}
             </div>
             <div>
               <Tag
                 color={statusColor}
-                style={{
-                  textTransform: 'uppercase',
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.05em',
-                  fontWeight: 600,
-                  margin: 0
-                }}
+                className="uppercase text-[0.65rem] tracking-[0.05em] font-semibold !m-0"
               >
                 {record.status}
               </Tag>
@@ -120,18 +108,18 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
   if (isDataLoading) {
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '2rem' }}>
-          <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+        <div className="mb-8">
+          <Skeleton.Button active className="!w-[120px] !h-3.5 !mb-2" />
           <br />
-          <Skeleton.Input active style={{ width: '300px', height: '40px' }} />
+          <Skeleton.Input active className="!w-[300px] !h-10" />
         </div>
 
         {/* Table Page Skeleton */}
         <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
           {/* Mock Search/Filter Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
-            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          <div className="flex justify-between mb-6">
+            <Skeleton.Input active className="!w-[260px] !h-9" />
+            <Skeleton.Input active className="!w-[180px] !h-9" />
           </div>
           {/* Mock Table Rows */}
           <Skeleton active paragraph={{ rows: 8 }} />
@@ -142,15 +130,15 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
   return (
     <div className="animate-fade-up">
-      <div style={{ marginBottom: '2rem' }}>
+      <div className="mb-8">
         <p className="label-overline">Queue Intake</p>
-        <h2 style={{ fontSize: '2.5rem', marginTop: '0.25rem' }}>Styling Requests Queue</h2>
+        <h2 className="text-[2.5rem] mt-1">Styling Requests Queue</h2>
       </div>
 
       <Table
         columns={columns}
         data={orders}
-        pageSize={10}
+        pageSize={20}
       />
     </div>
   );

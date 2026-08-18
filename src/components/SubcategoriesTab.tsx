@@ -100,22 +100,18 @@ export const SubcategoriesTab: React.FC = () => {
         const record = row.original;
         const parent = categories.find(c => c.id === record.parentId);
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-            <strong style={{
-              fontSize: '0.95rem',
-              color: record.isActive ? 'var(--color-ink)' : 'var(--color-mute)',
-              textDecoration: record.isActive ? 'none' : 'line-through'
-            }}>
+          <div className="flex flex-col gap-0.5">
+            <strong className={`text-[0.95rem] ${record.isActive ? 'text-ink no-underline' : 'text-mute line-through'}`}>
               {record.name}
             </strong>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-mute)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="text-xs text-mute flex items-center gap-2">
               <span>Parent:</span>
-              {parent ? <Tag color="orange" style={{ margin: 0, fontSize: '0.68rem', lineHeight: '1.2' }}>{parent.name}</Tag> : <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Orphaned</span>}
+              {parent ? <Tag color="orange" className="!m-0 text-[0.68rem] leading-[1.2]">{parent.name}</Tag> : <span className="italic text-mute">Orphaned</span>}
               <span>•</span>
               <span>Order: {record.sortOrder}</span>
             </div>
             {record.description && (
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-mute)', fontStyle: 'italic', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={record.description}>
+              <span className="text-[0.8rem] text-mute italic max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={record.description}>
                 {record.description}
               </span>
             )}
@@ -129,10 +125,10 @@ export const SubcategoriesTab: React.FC = () => {
       Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
-            <div><Tag color="cyan" style={{ fontFamily: 'monospace', margin: 0 }}>{record.slug}</Tag></div>
+          <div className="flex flex-col gap-1 text-[0.85rem]">
+            <div><Tag color="cyan" className="font-mono !m-0">{record.slug}</Tag></div>
             {record.videos?.length > 0 ? (
-              <div style={{ fontSize: '0.72rem', color: 'var(--color-mute)' }}>🎥 {record.videos.length} Videos</div>
+              <div className="text-[0.72rem] text-mute">🎥 {record.videos.length} Videos</div>
             ) : null}
           </div>
         );
@@ -196,21 +192,21 @@ export const SubcategoriesTab: React.FC = () => {
   if (categoriesLoading) {
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div className="mb-8 flex justify-between items-baseline">
           <div>
-            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <Skeleton.Button active className="!w-[120px] !h-3.5 !mb-2" />
             <br />
-            <Skeleton.Input active style={{ width: '300px', height: '40px' }} />
+            <Skeleton.Input active className="!w-[300px] !h-10" />
           </div>
-          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+          <Skeleton.Button active className="!w-[150px] !h-10" />
         </div>
 
         {/* Table Page Skeleton */}
         <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
           {/* Mock Search/Filter Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
-            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          <div className="flex justify-between mb-6">
+            <Skeleton.Input active className="!w-[260px] !h-9" />
+            <Skeleton.Input active className="!w-[180px] !h-9" />
           </div>
           {/* Mock Table Rows */}
           <Skeleton active paragraph={{ rows: 8 }} />
@@ -224,7 +220,7 @@ export const SubcategoriesTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Taxonomy System</p>
-          <h2 className="text-3xl font-bold" style={{ marginTop: '0.25rem' }}>Subcategories</h2>
+          <h2 className="text-3xl font-bold mt-1">Subcategories</h2>
         </div>
         <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddSubcategory} className="w-full sm:w-auto">
           Add Subcategory
@@ -235,7 +231,7 @@ export const SubcategoriesTab: React.FC = () => {
       <Table
         columns={columns}
         data={subcategories}
-        pageSize={8}
+        pageSize={20}
       />
 
       <SubcategoryModal

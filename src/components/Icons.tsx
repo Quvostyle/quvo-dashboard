@@ -81,11 +81,11 @@ export const CheckIcon = ({ size = 16, ...props }: IconProps) => (
 );
 
 export const ChevronIcon = ({ size = 16, direction = 'down', ...props }: IconProps & { direction?: 'up' | 'down' | 'left' | 'right' }) => {
-  const rotation = {
-    up: 'rotate(180deg)',
-    down: 'rotate(0deg)',
-    left: 'rotate(90deg)',
-    right: 'rotate(-90deg)',
+  const rotationClass = {
+    up: 'rotate-180',
+    down: 'rotate-0',
+    left: 'rotate-90',
+    right: '-rotate-90',
   }[direction];
 
   return (
@@ -99,7 +99,7 @@ export const ChevronIcon = ({ size = 16, direction = 'down', ...props }: IconPro
       strokeWidth="1.5" 
       strokeLinecap="round" 
       strokeLinejoin="round" 
-      style={{ transform: rotation, transition: 'transform 0.2s ease' }} 
+      className={`transition-transform duration-200 ease-out ${rotationClass}`}
       {...props}
     >
       <polyline points="6 9 12 15 18 9" />
