@@ -25,13 +25,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const isDataLoading = ordersLoading || providersLoading || categoriesLoading;
 
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-
   if (isDataLoading) {
     return (
       <div className="animate-fade-in">
@@ -98,30 +91,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="animate-fade-up pb-8">
-      {/* Premium Hero Greeting Banner */}
-      <div className="bg-gradient-to-r from-ink via-[#4A3B2F] to-[#635041] p-8 rounded-2xl text-white shadow-md relative overflow-hidden mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        {/* Abstract Gold Glow background accents */}
-        <div className="absolute right-0 top-0 w-64 h-64 bg-gold opacity-15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 bottom-0 w-32 h-32 bg-wine opacity-10 rounded-full blur-2xl pointer-events-none" />
-        
-        <div className="relative z-10">
-          <p className="text-gold text-xs font-semibold uppercase tracking-widest mb-1.5">Creative Studio Console</p>
-          <h2 className="text-3xl md:text-4xl font-serif text-[#FFF8F0] !m-0 font-normal leading-tight">Welcome to QUVO Studio</h2>
-          <p className="text-[#E7DDCC]/80 text-[0.85rem] mt-2 max-w-xl font-sans font-light">
-            Manage your high-end styling requests, luxury catalog taxonomy, stylist assignments, and client portfolio records.
-          </p>
-        </div>
-        
-        <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/10 px-5 py-3.5 rounded-xl flex flex-col items-start md:items-end gap-1 min-w-[200px]">
-          <span className="text-[0.7rem] text-gold uppercase tracking-widest font-semibold">Current Session</span>
-          <span className="text-sm font-medium text-[#FFF8F0]">{currentDate}</span>
-          <span className="text-[0.72rem] text-[#E7DDCC]/70 mt-1 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Studio Server Connected
-          </span>
-        </div>
-      </div>
-
       {/* KPI Cards Grid */}
       <Row gutter={[24, 24]} className="mb-8">
         <Col xs={24} sm={12} lg={6}>
@@ -136,7 +105,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
           </div>
         </Col>
-        
+
         <Col xs={24} sm={12} lg={6}>
           <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
             <div>
@@ -151,7 +120,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
           </div>
         </Col>
-        
+
         <Col xs={24} sm={12} lg={6}>
           <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
             <div>
@@ -164,7 +133,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
           </div>
         </Col>
-        
+
         <Col xs={24} sm={12} lg={6}>
           <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
             <div>
@@ -183,7 +152,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <Row gutter={[32, 32]}>
         {/* Recent Orders List */}
         <Col xs={24} lg={15}>
-          <Card 
+          <Card
             title={
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-gold" />
@@ -194,7 +163,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <Button type="link" onClick={onViewAllQueue} className="!text-gold hover:!text-ink !p-0 font-medium text-sm flex items-center gap-1">
                 View Queue
               </Button>
-            } 
+            }
             className="premium-list-card rounded-2xl border border-line bg-[#FFFDF9] shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)]"
           >
             <List
@@ -248,7 +217,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
         {/* Donut breakdown chart */}
         <Col xs={24} lg={9}>
-          <Card 
+          <Card
             title={
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-gold" />
@@ -279,7 +248,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-ink)" strokeWidth="11" strokeDasharray={`${(statusPercentages[2] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} strokeLinecap="round" />
                   )}
                 </svg>
-                
+
                 {/* Stats in the center */}
                 <div className="absolute flex flex-col items-center justify-center text-center">
                   <span className="text-2xl font-serif font-normal text-ink leading-none">{totalOrders}</span>
@@ -295,7 +264,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   </div>
                   <strong>{pendingOrders} ({Math.round(statusPercentages[0])}%)</strong>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-xs text-ink">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-gold" />
@@ -303,7 +272,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   </div>
                   <strong>{assignedOrders} ({Math.round(statusPercentages[1])}%)</strong>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-xs text-ink">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-ink" />
@@ -322,7 +291,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <h4 className="font-serif text-lg text-ink font-normal mb-4">Quick Studio Actions</h4>
         <Row gutter={[16, 16]}>
           <Col xs={12} sm={6}>
-            <button 
+            <button
               onClick={onViewAllQueue}
               className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2"
             >
@@ -331,7 +300,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </button>
           </Col>
           <Col xs={12} sm={6}>
-            <Link 
+            <Link
               to="/providers"
               className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2 no-underline block"
             >
@@ -340,7 +309,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </Link>
           </Col>
           <Col xs={12} sm={6}>
-            <Link 
+            <Link
               to="/categories"
               className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2 no-underline block"
             >
@@ -349,7 +318,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </Link>
           </Col>
           <Col xs={12} sm={6}>
-            <Link 
+            <Link
               to="/rate-cards"
               className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2 no-underline block"
             >
