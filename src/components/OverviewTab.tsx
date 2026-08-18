@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Row, Col, Statistic, List, Button, Space, Skeleton } from 'antd';
+import { Card, Row, Col, List, Button, Tag, Skeleton } from 'antd';
+import { Link } from 'react-router-dom';
 import {
   LuShoppingBag,
   LuInfo,
@@ -24,22 +25,37 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const isDataLoading = ordersLoading || providersLoading || categoriesLoading;
 
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
   if (isDataLoading) {
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '2rem' }}>
-          <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
-          <br />
-          <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+        {/* Banner Skeleton */}
+        <div className="h-[180px] bg-[#FFFDF9] border border-line rounded-2xl mb-8 p-8 flex flex-col justify-between">
+          <div>
+            <Skeleton.Button active className="!w-[150px] !h-4 !mb-2" />
+            <br />
+            <Skeleton.Input active className="!w-[280px] !h-8" />
+          </div>
+          <Skeleton.Input active className="!w-[450px] !h-4" />
         </div>
 
         {/* KPI Cards Skeleton */}
-        <Row gutter={[24, 24]} className="kpi-row" style={{ marginBottom: '2rem' }}>
+        <Row gutter={[24, 24]} className="mb-8">
           {[1, 2, 3, 4].map((i) => (
             <Col xs={24} sm={12} lg={6} key={i}>
-              <Card className="premium-kpi-card" styles={{ body: { padding: '1.25rem' } }}>
-                <Skeleton active paragraph={{ rows: 1 }} title={{ width: '60%' }} />
-              </Card>
+              <div className="bg-[#FFFDF9] border border-line p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                  <Skeleton.Button active className="!w-[80px] !h-3 !mb-2" />
+                  <Skeleton.Input active className="!w-[60px] !h-8" />
+                </div>
+                <Skeleton.Avatar active size={40} shape="square" className="!rounded-xl" />
+              </div>
             </Col>
           ))}
         </Row>
@@ -47,13 +63,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         {/* List & Chart Skeleton */}
         <Row gutter={[32, 32]}>
           <Col xs={24} lg={15}>
-            <Card title="Recent Orders Queue">
+            <Card title="Recent Orders Queue" className="rounded-2xl border border-line bg-[#FFFDF9]">
               <Skeleton active paragraph={{ rows: 5 }} />
             </Card>
           </Col>
           <Col xs={24} lg={9}>
-            <Card title="Order Status Breakdown">
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '1rem 0' }}>
+            <Card title="Order Status Breakdown" className="rounded-2xl border border-line bg-[#FFFDF9]">
+              <div className="flex flex-col items-center gap-6 py-4">
                 <Skeleton.Avatar active size={100} shape="circle" />
                 <Skeleton active paragraph={{ rows: 3 }} title={false} />
               </div>
@@ -81,45 +97,85 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   let runningStroke = 0;
 
   return (
-    <div className="animate-fade-up">
-      <div style={{ marginBottom: '2rem' }}>
-        <p className="label-overline">Dashboard Overview</p>
-        <h2 style={{ fontSize: '2.5rem', marginTop: '0.25rem' }}>Welcome to QUVO Studio.</h2>
+    <div className="animate-fade-up pb-8">
+      {/* Premium Hero Greeting Banner */}
+      <div className="bg-gradient-to-r from-ink via-[#4A3B2F] to-[#635041] p-8 rounded-2xl text-white shadow-md relative overflow-hidden mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {/* Abstract Gold Glow background accents */}
+        <div className="absolute right-0 top-0 w-64 h-64 bg-gold opacity-15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 w-32 h-32 bg-wine opacity-10 rounded-full blur-2xl pointer-events-none" />
+        
+        <div className="relative z-10">
+          <p className="text-gold text-xs font-semibold uppercase tracking-widest mb-1.5">Creative Studio Console</p>
+          <h2 className="text-3xl md:text-4xl font-serif text-[#FFF8F0] !m-0 font-normal leading-tight">Welcome to QUVO Studio</h2>
+          <p className="text-[#E7DDCC]/80 text-[0.85rem] mt-2 max-w-xl font-sans font-light">
+            Manage your high-end styling requests, luxury catalog taxonomy, stylist assignments, and client portfolio records.
+          </p>
+        </div>
+        
+        <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/10 px-5 py-3.5 rounded-xl flex flex-col items-start md:items-end gap-1 min-w-[200px]">
+          <span className="text-[0.7rem] text-gold uppercase tracking-widest font-semibold">Current Session</span>
+          <span className="text-sm font-medium text-[#FFF8F0]">{currentDate}</span>
+          <span className="text-[0.72rem] text-[#E7DDCC]/70 mt-1 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Studio Server Connected
+          </span>
+        </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <Row gutter={[24, 24]} className="kpi-row">
+      <Row gutter={[24, 24]} className="mb-8">
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
-            <div className="kpi-card-inner">
-              <Statistic title={<span className="label-overline">Total Orders</span>} value={totalOrders} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem' }} />
-              <div className="kpi-icon cocoa"><LuShoppingBag size={20} /></div>
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+            <div>
+              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Total Orders</p>
+              <h3 className="text-3xl font-serif text-ink font-normal !m-0">{totalOrders}</h3>
+              <p className="text-[0.68rem] text-emerald-600 mt-1 font-medium">Updated just now</p>
             </div>
-          </Card>
+            <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <LuShoppingBag size={22} />
+            </div>
+          </div>
         </Col>
+        
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
-            <div className="kpi-card-inner">
-              <Statistic title={<span className="label-overline">Pending Review</span>} value={pendingOrders} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', color: pendingOrders > 0 ? 'var(--color-wine)' : 'inherit' }} />
-              <div className="kpi-icon wine"><LuInfo size={20} /></div>
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+            <div>
+              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Pending Review</p>
+              <h3 className={`text-3xl font-serif font-normal !m-0 ${pendingOrders > 0 ? 'text-wine' : 'text-ink'}`}>{pendingOrders}</h3>
+              <p className={`text-[0.68rem] mt-1 font-medium ${pendingOrders > 0 ? 'text-wine animate-pulse' : 'text-mute'}`}>
+                {pendingOrders > 0 ? 'Requires attention' : 'All clear'}
+              </p>
             </div>
-          </Card>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${pendingOrders > 0 ? 'bg-wine/10 text-wine' : 'bg-gold/10 text-gold'}`}>
+              <LuInfo size={22} />
+            </div>
+          </div>
         </Col>
+        
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
-            <div className="kpi-card-inner">
-              <Statistic title={<span className="label-overline">Stylist Partner Directory</span>} value={totalProviders} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem' }} />
-              <div className="kpi-icon gold"><LuUser size={20} /></div>
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+            <div>
+              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Stylist Partners</p>
+              <h3 className="text-3xl font-serif text-ink font-normal !m-0">{totalProviders}</h3>
+              <p className="text-[0.68rem] text-[#4A5D3F] mt-1 font-medium">On duty active</p>
             </div>
-          </Card>
+            <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <LuUser size={22} />
+            </div>
+          </div>
         </Col>
+        
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '1.25rem' } }} className="premium-kpi-card">
-            <div className="kpi-card-inner">
-              <Statistic title={<span className="label-overline">Active Categories</span>} value={activeCategoriesCount} suffix={`/ ${categories.length}`} valueStyle={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem' }} />
-              <div className="kpi-icon moss"><LuFolder size={20} /></div>
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+            <div>
+              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Active Categories</p>
+              <h3 className="text-3xl font-serif text-ink font-normal !m-0">{activeCategoriesCount} <span className="text-lg text-mute">/ {categories.length}</span></h3>
+              <p className="text-[0.68rem] text-mute mt-1 font-medium">Service catalog layers</p>
             </div>
-          </Card>
+            <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <LuFolder size={22} />
+            </div>
+          </div>
         </Col>
       </Row>
 
@@ -127,66 +183,182 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <Row gutter={[32, 32]}>
         {/* Recent Orders List */}
         <Col xs={24} lg={15}>
-          <Card title="Recent Orders Queue" extra={<Button type="link" onClick={onViewAllQueue} style={{ color: 'var(--color-gold)' }}>View All Queue</Button>} className="premium-list-card">
+          <Card 
+            title={
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-gold" />
+                <span className="font-serif text-lg text-ink font-normal">Recent Orders Queue</span>
+              </div>
+            }
+            extra={
+              <Button type="link" onClick={onViewAllQueue} className="!text-gold hover:!text-ink !p-0 font-medium text-sm flex items-center gap-1">
+                View Queue
+              </Button>
+            } 
+            className="premium-list-card rounded-2xl border border-line bg-[#FFFDF9] shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)]"
+          >
             <List
               itemLayout="horizontal"
               dataSource={orders.slice(0, 5)}
-              renderItem={(order) => (
-                <List.Item
-                  actions={[
-                    <Button size="small" type="primary" onClick={() => onManageRequest(order)}>Details</Button>
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={<strong style={{ fontSize: '0.95rem' }}>{order.occasion}</strong>}
-                    description={
-                      <Space split={<span style={{ color: 'var(--color-line)' }}>|</span>} style={{ fontSize: '0.8rem', color: 'var(--color-mute)' }}>
-                        <span>Client: {order.user_name}</span>
-                        <span>Demo: {order.gender}</span>
-                        <span>Status: <span style={{ color: 'var(--color-ink)', fontWeight: 600 }}>{order.status}</span></span>
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
+              locale={{ emptyText: <div className="py-8 text-center text-mute italic">No active requests in queue</div> }}
+              renderItem={(order) => {
+                const clientInitials = order.user_name ? order.user_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'C';
+                const statusColors: Record<string, string> = {
+                  pending: 'gold',
+                  assigned: 'blue',
+                  completed: 'success'
+                };
+                return (
+                  <List.Item
+                    className="hover:bg-[rgba(184,148,106,0.02)] transition-colors duration-200 rounded-lg px-3 py-2.5 !border-b !border-[#B8946A]/10 last:!border-none"
+                    actions={[
+                      <Button size="small" type="primary" className="!bg-ink hover:!bg-gold !border-none !rounded-[6px]" onClick={() => onManageRequest(order)}>
+                        Review Details
+                      </Button>
+                    ]}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <div className="w-10 h-10 rounded-full bg-ink text-gold flex items-center justify-center font-bold text-xs">
+                          {clientInitials}
+                        </div>
+                      }
+                      title={
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <strong className="text-[0.95rem] font-serif text-ink">{order.occasion}</strong>
+                          <Tag className="capitalize !rounded-[10px] text-[0.65rem] !m-0 !px-2 py-0 border-none" color={statusColors[order.status] || 'default'}>
+                            {order.status}
+                          </Tag>
+                        </div>
+                      }
+                      description={
+                        <div className="text-[0.78rem] text-mute flex items-center gap-3 mt-1 flex-wrap">
+                          <span>Client: <span className="font-medium text-ink">{order.user_name}</span></span>
+                          <span>•</span>
+                          <span>Demographic: <span className="font-medium text-ink capitalize">{order.gender}</span></span>
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                );
+              }}
             />
           </Card>
         </Col>
 
         {/* Donut breakdown chart */}
         <Col xs={24} lg={9}>
-          <Card title="Order Status Breakdown" className="overview-breakdown-panel premium-chart-card">
-            <div className="overview-svg-donut-container">
-              <svg width="130" height="130" className="svg-donut">
-                <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-line)" strokeWidth="12" />
+          <Card 
+            title={
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-gold" />
+                <span className="font-serif text-lg text-ink font-normal">Order Status Breakdown</span>
+              </div>
+            }
+            className="premium-chart-card rounded-2xl border border-line bg-[#FFFDF9] shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)]"
+          >
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="relative flex items-center justify-center w-[130px] h-[130px]">
+                <svg width="130" height="130" className="svg-donut transform -rotate-90">
+                  <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-line)" strokeWidth="10" />
 
-                {/* Pending segment */}
-                {statusPercentages[0] > 0 && (
-                  <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-mute)" strokeWidth="13" strokeDasharray={`${(statusPercentages[0] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} />
-                )}
-                {(() => { runningStroke += (statusPercentages[0] / 100) * circ; return null; })()}
+                  {/* Pending segment */}
+                  {statusPercentages[0] > 0 && (
+                    <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-mute)" strokeWidth="11" strokeDasharray={`${(statusPercentages[0] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} strokeLinecap="round" />
+                  )}
+                  {(() => { runningStroke += (statusPercentages[0] / 100) * circ; return null; })()}
 
-                {/* Assigned segment */}
-                {statusPercentages[1] > 0 && (
-                  <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-gold)" strokeWidth="13" strokeDasharray={`${(statusPercentages[1] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} />
-                )}
-                {(() => { runningStroke += (statusPercentages[1] / 100) * circ; return null; })()}
+                  {/* Assigned segment */}
+                  {statusPercentages[1] > 0 && (
+                    <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-gold)" strokeWidth="11" strokeDasharray={`${(statusPercentages[1] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} strokeLinecap="round" />
+                  )}
+                  {(() => { runningStroke += (statusPercentages[1] / 100) * circ; return null; })()}
 
-                {/* Completed segment */}
-                {statusPercentages[2] > 0 && (
-                  <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-ink)" strokeWidth="13" strokeDasharray={`${(statusPercentages[2] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} />
-                )}
-              </svg>
+                  {/* Completed segment */}
+                  {statusPercentages[2] > 0 && (
+                    <circle cx="65" cy="65" r="45" fill="transparent" stroke="var(--color-ink)" strokeWidth="11" strokeDasharray={`${(statusPercentages[2] / 100) * circ} ${circ}`} strokeDashoffset={-runningStroke} strokeLinecap="round" />
+                  )}
+                </svg>
+                
+                {/* Stats in the center */}
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                  <span className="text-2xl font-serif font-normal text-ink leading-none">{totalOrders}</span>
+                  <span className="text-[0.62rem] text-mute uppercase tracking-wider font-semibold mt-1">Total</span>
+                </div>
+              </div>
 
-              <div className="chart-legend" style={{ gridTemplateColumns: '1fr', marginTop: '1.25rem' }}>
-                <div className="legend-item"><div className="legend-color" style={{ background: 'var(--color-mute)' }} /> Pending Review: <strong>{pendingOrders}</strong> ({Math.round(statusPercentages[0])}%)</div>
-                <div className="legend-item"><div className="legend-color" style={{ background: 'var(--color-gold)' }} /> In Progress: <strong>{assignedOrders}</strong> ({Math.round(statusPercentages[1])}%)</div>
-                <div className="legend-item"><div className="legend-color" style={{ background: 'var(--color-ink)' }} /> Completed (Lookbook): <strong>{completedOrders}</strong> ({Math.round(statusPercentages[2])}%)</div>
+              <div className="chart-legend grid-cols-1 mt-6 w-full px-4 space-y-2.5">
+                <div className="flex items-center justify-between text-xs text-ink">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-mute" />
+                    <span>Pending Review</span>
+                  </div>
+                  <strong>{pendingOrders} ({Math.round(statusPercentages[0])}%)</strong>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-ink">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-gold" />
+                    <span>In Progress</span>
+                  </div>
+                  <strong>{assignedOrders} ({Math.round(statusPercentages[1])}%)</strong>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-ink">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-ink" />
+                    <span>Completed</span>
+                  </div>
+                  <strong>{completedOrders} ({Math.round(statusPercentages[2])}%)</strong>
+                </div>
               </div>
             </div>
           </Card>
         </Col>
       </Row>
+
+      {/* Studio Quick Actions */}
+      <div className="mt-8">
+        <h4 className="font-serif text-lg text-ink font-normal mb-4">Quick Studio Actions</h4>
+        <Row gutter={[16, 16]}>
+          <Col xs={12} sm={6}>
+            <button 
+              onClick={onViewAllQueue}
+              className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2"
+            >
+              <span className="text-gold text-lg group-hover:scale-110 transition-transform duration-200">📋</span>
+              <span className="text-xs font-semibold text-ink">Manage Queue</span>
+            </button>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Link 
+              to="/providers"
+              className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2 no-underline block"
+            >
+              <span className="text-gold text-lg group-hover:scale-110 transition-transform duration-200">🤝</span>
+              <span className="text-xs font-semibold text-ink">Onboard Stylist</span>
+            </Link>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Link 
+              to="/categories"
+              className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2 no-underline block"
+            >
+              <span className="text-gold text-lg group-hover:scale-110 transition-transform duration-200">📁</span>
+              <span className="text-xs font-semibold text-ink">Service Categories</span>
+            </Link>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Link 
+              to="/rate-cards"
+              className="w-full bg-[#FFFDF9] border border-[#B8946A]/20 hover:border-gold p-4 rounded-xl text-center transition-all duration-200 hover:shadow-sm cursor-pointer group flex flex-col items-center gap-2 no-underline block"
+            >
+              <span className="text-gold text-lg group-hover:scale-110 transition-transform duration-200">💳</span>
+              <span className="text-xs font-semibold text-ink">Configure Pricing</span>
+            </Link>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };

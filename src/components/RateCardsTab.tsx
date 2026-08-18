@@ -93,24 +93,24 @@ export const RateCardsTab: React.FC = () => {
         const record = row.original;
         const mainImage = record.images?.[0];
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="flex items-center gap-3">
             {mainImage ? (
-              <img src={mainImage} alt={record.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-line)' }} />
+              <img src={mainImage} alt={record.name} className="w-20 h-20 object-cover rounded-md border border-line" />
             ) : (
-              <div style={{ width: '48px', height: '48px', background: '#fafafa', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-line)' }}>
-                <LuImage size={20} style={{ color: '#ccc' }} />
+              <div className="w-12 h-12 bg-[#fafafa] rounded-md flex items-center justify-center border border-line">
+                <LuImage size={20} className="text-[#ccc]" />
               </div>
             )}
             <div>
-              <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--color-ink)' }}>{record.name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-mute)', marginTop: '0.15rem' }}>
-                Type: <span style={{ fontWeight: 600, textTransform: 'uppercase' }}>{record.serviceType}</span>
+              <div className="font-semibold text-[0.95rem] text-ink">{record.name}</div>
+              <div className="text-[0.8rem] text-mute mt-0.5">
+                Type: <span className="font-semibold uppercase">{record.serviceType}</span>
               </div>
-              <div style={{ marginTop: '0.25rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                {record.recommended && <Tag color="gold" style={{ fontSize: '0.7rem', margin: 0, padding: '0 6px', lineHeight: '1.4' }}>Recommended</Tag>}
-                {record.bestDeal && <Tag color="purple" style={{ fontSize: '0.7rem', margin: 0, padding: '0 6px', lineHeight: '1.4' }}>Best Deal</Tag>}
-                {record.images?.length > 0 && <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)' }}>📷 {record.images.length}</span>}
-                {record.videos?.length > 0 && <span style={{ fontSize: '0.7rem', color: 'var(--color-mute)' }}>🎥 {record.videos.length}</span>}
+              <div className="mt-1 flex gap-1 flex-wrap items-center">
+                {record.recommended && <Tag color="gold" className="text-[0.7rem] !m-0 py-0 px-1.5 leading-[1.4]">Recommended</Tag>}
+                {record.bestDeal && <Tag color="purple" className="text-[0.7rem] !m-0 py-0 px-1.5 leading-[1.4]">Best Deal</Tag>}
+                {record.images?.length > 0 && <span className="text-[0.7rem] text-mute">📷 {record.images.length}</span>}
+                {record.videos?.length > 0 && <span className="text-[0.7rem] text-mute">🎥 {record.videos.length}</span>}
               </div>
             </div>
           </div>
@@ -122,19 +122,16 @@ export const RateCardsTab: React.FC = () => {
       id: 'category_partner',
       Cell: ({ row }: any) => {
         const record = row.original;
-        const parent = categories.find(c => c.id === record.categoryId);
-        const sub = categories.find(c => c.id === record.subcategoryId);
-        const prov = providers.find(p => p.id === record.providerId);
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
-            <div><span style={{ color: 'var(--color-mute)' }}>Category:</span> {parent ? <Tag color="blue" style={{ margin: 0 }}>{parent.name}</Tag> : '—'}</div>
-            <div><span style={{ color: 'var(--color-mute)' }}>Subcategory:</span> {sub ? <Tag color="cyan" style={{ margin: 0 }}>{sub.name}</Tag> : '—'}</div>
+          <div className="flex flex-col gap-1 text-[0.85rem]">
+            <div><span className="text-mute">Category:</span> {record.category?.name ? <Tag color="blue" className="!m-0">{record.category.name}</Tag> : '—'}</div>
+            <div><span className="text-mute">Subcategory:</span> {record.subcategory?.name ? <Tag color="cyan" className="!m-0">{record.subcategory.name}</Tag> : '—'}</div>
             <div>
-              <span style={{ color: 'var(--color-mute)' }}>Partner:</span>{' '}
-              {prov ? (
-                <span style={{ fontWeight: 500 }}>{prov.full_name}</span>
+              <span className="text-mute">Partner:</span>{' '}
+              {record.provider?.full_name ? (
+                <span className="font-medium">{record.provider.full_name}</span>
               ) : (
-                <span style={{ fontStyle: 'italic', color: 'var(--color-mute)' }}>Unassigned</span>
+                <span className="italic text-mute">Unassigned</span>
               )}
             </div>
           </div>
@@ -147,14 +144,14 @@ export const RateCardsTab: React.FC = () => {
       Cell: ({ row }: any) => {
         const record = row.original;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
-            <div><span style={{ color: 'var(--color-mute)' }}>Price:</span> <strong style={{ color: 'var(--color-ink)' }}>₹{record.price.toLocaleString()}</strong></div>
+          <div className="flex flex-col gap-1 text-[0.85rem]">
+            <div><span className="text-mute">Price:</span> <strong className="text-ink">₹{record.price.toLocaleString()}</strong></div>
             {record.strikePrice ? (
-              <div><span style={{ color: 'var(--color-mute)' }}>Strike Price:</span> <span style={{ textDecoration: 'line-through', color: 'var(--color-mute)' }}>₹{record.strikePrice.toLocaleString()}</span></div>
+              <div><span className="text-mute">Strike Price:</span> <span className="line-through text-mute">₹{record.strikePrice.toLocaleString()}</span></div>
             ) : null}
             <div>
-              <span style={{ color: 'var(--color-mute)' }}>Status:</span>{' '}
-              {record.active ? <Tag color="success" style={{ margin: 0 }}>Active</Tag> : <Tag color="error" style={{ margin: 0 }}>Inactive</Tag>}
+              <span className="text-mute">Status:</span>{' '}
+              {record.active ? <Tag color="success" className="!m-0">Active</Tag> : <Tag color="error" className="!m-0">Inactive</Tag>}
             </div>
           </div>
         );
@@ -197,21 +194,21 @@ export const RateCardsTab: React.FC = () => {
   if (rateCardsLoading || categoriesLoading || providersLoading) {
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div className="mb-8 flex justify-between items-baseline">
           <div>
-            <Skeleton.Button active style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+            <Skeleton.Button active className="!w-[120px] !h-3.5 !mb-2" />
             <br />
-            <Skeleton.Input active style={{ width: '380px', height: '40px' }} />
+            <Skeleton.Input active className="!w-[380px] !h-10" />
           </div>
-          <Skeleton.Button active style={{ width: '150px', height: '40px' }} />
+          <Skeleton.Button active className="!w-[150px] !h-10" />
         </div>
 
         {/* Table Page Skeleton */}
         <div className="bg-white p-6 rounded-lg border border-line shadow-sm">
           {/* Mock Search/Filter Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <Skeleton.Input active style={{ width: '260px', height: '36px' }} />
-            <Skeleton.Input active style={{ width: '180px', height: '36px' }} />
+          <div className="flex justify-between mb-6">
+            <Skeleton.Input active className="!w-[260px] !h-9" />
+            <Skeleton.Input active className="!w-[180px] !h-9" />
           </div>
           {/* Mock Table Rows */}
           <Skeleton active paragraph={{ rows: 8 }} />
@@ -225,7 +222,7 @@ export const RateCardsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <p className="label-overline">Rate Cards</p>
-          <h2 className="text-3xl font-bold" style={{ marginTop: '0.25rem' }}>Service Rate Management</h2>
+          <h2 className="text-3xl font-bold mt-1">Service Rate Management</h2>
         </div>
         <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddRateCard} className="w-full sm:w-auto">
           Create Rate Card
@@ -236,7 +233,7 @@ export const RateCardsTab: React.FC = () => {
       <Table
         columns={columns}
         data={rateCards}
-        pageSize={8}
+        pageSize={20}
       />
 
       <RateCardModal

@@ -22,7 +22,7 @@ interface TableProps {
 export const Table: React.FC<TableProps> = ({
   columns: initialColumns,
   data: initialData,
-  pageSize = 10,
+  pageSize = 20,
   isPaginated = true,
   expandable = false,
 }) => {
@@ -82,9 +82,8 @@ export const Table: React.FC<TableProps> = ({
               placeholder="Search records..."
               value={globalFilter || ""}
               onChange={(e) => setGlobalFilter(e.target.value || undefined)}
-              className="w-full md:w-[260px]"
-              style={{ height: "36px", borderRadius: "6px" }}
-              prefix={<LuSearch size={15} style={{ color: "var(--color-mute)" }} />}
+              className="w-full md:w-[260px] h-9 rounded-md"
+              prefix={<LuSearch size={15} className="text-mute" />}
               allowClear
             />
           </div>
@@ -99,12 +98,11 @@ export const Table: React.FC<TableProps> = ({
                 size="middle"
                 value={statePageSize}
                 onChange={(val) => setPageSize(val)}
-                style={{ width: "110px" }}
+                className="w-[110px]"
                 options={[
-                  { value: 5, label: "Show 5" },
-                  { value: 10, label: "Show 10" },
                   { value: 20, label: "Show 20" },
                   { value: 50, label: "Show 50" },
+                  { value: 100, label: "Show 100" },
                 ]}
               />
               <div className="flex items-center space-x-1">
@@ -113,28 +111,28 @@ export const Table: React.FC<TableProps> = ({
                   onClick={() => gotoPage(0)}
                   disabled={!canPreviousPage}
                   icon={<LuChevronsLeft size={16} />}
-                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  className="inline-flex items-center justify-center"
                 />
                 <Button
                   size="middle"
                   onClick={() => previousPage()}
                   disabled={!canPreviousPage}
                   icon={<LuChevronLeft size={16} />}
-                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  className="inline-flex items-center justify-center"
                 />
                 <Button
                   size="middle"
                   onClick={() => nextPage()}
                   disabled={!canNextPage}
                   icon={<LuChevronRight size={16} />}
-                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  className="inline-flex items-center justify-center"
                 />
                 <Button
                   size="middle"
                   onClick={() => gotoPage(pageCount - 1)}
                   disabled={!canNextPage}
                   icon={<LuChevronsRight size={16} />}
-                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  className="inline-flex items-center justify-center"
                 />
               </div>
             </div>
@@ -147,11 +145,7 @@ export const Table: React.FC<TableProps> = ({
         <div className="py-2 align-middle inline-block w-full sm:px-6 lg:px-8">
           <div className="shadow overflow-hidden sm:rounded-lg border">
             <div
-              className="overflow-x-auto overflow-y-auto custom-scroll"
-              style={{
-                maxHeight: "65vh", // Vertical scroll limit
-                maxWidth: "100%", // Ensure container doesn’t exceed parent width
-              }}
+              className="overflow-x-auto overflow-y-auto custom-scroll max-h-[65vh] max-w-full"
             >
               <table
                 {...getTableProps()}
@@ -222,13 +216,14 @@ export const Table: React.FC<TableProps> = ({
                           {row.cells.map((cell: any, index: number) => (
                             <td
                               {...cell.getCellProps()}
-                              className="px-2 py-2 border text-sm min-w-[150px]"
+                              className={`px-2 py-2 border text-sm min-w-[150px] align-top ${
+                                !(expandable && index === 0) ? "pl-2" : ""
+                              }`}
                               style={{
-                                verticalAlign: "top",
                                 paddingLeft:
                                   expandable && index === 0
                                     ? `${row.depth * 1.5 + 0.5}rem`
-                                    : "0.5rem",
+                                    : undefined,
                               }}
                               key={index}
                             >

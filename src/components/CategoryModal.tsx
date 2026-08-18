@@ -76,7 +76,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   return (
     <Modal
       title={
-        <div style={{ textAlign: 'center', width: '100%', fontSize: '1.2rem', fontWeight: 600 }}>
+        <div className="text-center w-full text-[1.2rem] font-semibold">
           {editingCategoryId ? 'Modify Root Category' : 'Create Root Category'}
         </div>
       }
@@ -88,8 +88,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     >
       <form
         onSubmit={handleSubmit(onSave)}
-        className="space-y-4 mt-4"
-        style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}
+        className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -133,7 +132,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 name="sortOrder"
                 control={control}
                 render={({ field }) => (
-                  <InputNumber {...field} style={{ width: '100%' }} min={0} size="large" />
+                  <InputNumber {...field} className="w-full" min={0} size="large" />
                 )}
               />
             </div>
@@ -147,14 +146,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 name="isActive"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" style={{ display: 'block' }} />
+                  <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" className="block" />
                 )}
               />
             </div>
           </Col>
         </Row>
 
-        <Divider style={{ margin: '1.5rem 0' }}>Media Assets</Divider>
+        <Divider className="!my-6">Media Assets</Divider>
 
         {/* Category Icon */}
         <div className="mb-4">
@@ -182,14 +181,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 }}
                 showUploadList={false}
               >
-                <Button icon={<LuUpload size={16} />} style={{ width: '100%' }} size="large">Upload</Button>
+                <Button icon={<LuUpload size={16} />} className="w-full" size="large">Upload</Button>
               </Upload>
             </Col>
           </Row>
           {iconValue && (
-            <div style={{ marginTop: '0.75rem', background: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: '4px', textAlign: 'center', border: '1px dashed var(--color-line)' }}>
-              <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-mute)', marginBottom: '0.25rem' }}>Icon Preview</span>
-              <img src={iconValue} alt="Icon Preview" style={{ maxHeight: '60px', objectFit: 'contain' }} />
+            <div className="mt-3 bg-[rgba(0,0,0,0.02)] p-2 rounded text-center border border-dashed border-line">
+              <span className="block text-xs text-mute mb-1">Icon Preview</span>
+              <img src={iconValue} alt="Icon Preview" className="max-h-[60px] object-contain mx-auto" />
             </div>
           )}
         </div>
@@ -199,9 +198,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Aesthetic / Instruction Videos
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="flex flex-col gap-4">
             {fields.map((field, index) => (
-              <div key={field.id} style={{ padding: '0.75rem', border: '1px solid var(--color-line)', borderRadius: '4px', background: 'rgba(0,0,0,0.01)' }}>
+              <div key={field.id} className="p-3 border border-line rounded bg-[rgba(0,0,0,0.01)]">
                 <Row gutter={8} align="middle">
                   <Col span={16}>
                     <Controller
@@ -233,11 +232,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   </Col>
                 </Row>
                 {videosValue?.[index] && (
-                  <div style={{ marginTop: '0.5rem', background: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div className="mt-2 bg-black rounded overflow-hidden">
                     <video
                       src={videosValue[index]}
                       controls
-                      style={{ width: '100%', maxHeight: '120px' }}
+                      className="w-full max-h-[120px]"
                     />
                   </div>
                 )}

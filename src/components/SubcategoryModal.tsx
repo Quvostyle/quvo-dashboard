@@ -77,7 +77,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   return (
     <Modal
       title={
-        <div style={{ textAlign: 'center', width: '100%', fontSize: '1.2rem', fontWeight: 600 }}>
+        <div className="text-center w-full text-[1.2rem] font-semibold">
           {editingSubcategoryId ? 'Modify Subcategory' : 'Create Subcategory'}
         </div>
       }
@@ -88,8 +88,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     >
       <form
         onSubmit={handleSubmit(onSave)}
-        className="space-y-4 mt-4"
-        style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}
+        className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -100,7 +99,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
             control={control}
             rules={{ required: 'Please select parent category group' }}
             render={({ field }) => (
-              <Select {...field} placeholder="Select parent category group..." size="large" style={{ width: '100%' }}>
+              <Select {...field} placeholder="Select parent category group..." size="large" className="w-full">
                 {rootCategories.map(r => (
                   <Select.Option key={r.id} value={r.id}>{r.name}</Select.Option>
                 ))}
@@ -156,7 +155,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                 name="sortOrder"
                 control={control}
                 render={({ field }) => (
-                  <InputNumber {...field} style={{ width: '100%' }} min={0} size="large" />
+                  <InputNumber {...field} className="w-full" min={0} size="large" />
                 )}
               />
             </div>
@@ -170,23 +169,23 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                 name="isActive"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" style={{ display: 'block' }} />
+                  <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" className="block" />
                 )}
               />
             </div>
           </Col>
         </Row>
 
-        <Divider style={{ margin: '1.5rem 0' }}>Media Assets</Divider>
+        <Divider className="!my-6">Media Assets</Divider>
 
         {/* Subcategory Videos */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Aesthetic / Instruction Videos
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="flex flex-col gap-4">
             {fields.map((field, index) => (
-              <div key={field.id} style={{ padding: '0.75rem', border: '1px solid var(--color-line)', borderRadius: '4px', background: 'rgba(0,0,0,0.01)' }}>
+              <div key={field.id} className="p-3 border border-line rounded bg-[rgba(0,0,0,0.01)]">
                 <Row gutter={8} align="middle">
                   <Col span={16}>
                     <Controller
@@ -218,11 +217,11 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                   </Col>
                 </Row>
                 {videosValue?.[index] && (
-                  <div style={{ marginTop: '0.5rem', background: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div className="mt-2 bg-black rounded overflow-hidden">
                     <video
                       src={videosValue[index]}
                       controls
-                      style={{ width: '100%', maxHeight: '120px' }}
+                      className="w-full max-h-[120px]"
                     />
                   </div>
                 )}

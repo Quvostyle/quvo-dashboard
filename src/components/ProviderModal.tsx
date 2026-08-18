@@ -72,7 +72,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
   return (
     <Modal
       title={
-        <div style={{ textAlign: 'center', width: '100%', fontSize: '1.2rem', fontWeight: 600 }}>
+        <div className="text-center w-full text-[1.2rem] font-semibold">
           {editingProviderId ? 'Edit Provider Profile' : 'Onboard New Provider'}
         </div>
       }
@@ -84,8 +84,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
     >
       <form
         onSubmit={handleSubmit(onSave)}
-        className="space-y-4 mt-4"
-        style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}
+        className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -161,7 +160,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 control={control}
                 rules={{ required: 'Gender is required' }}
                 render={({ field: { value, onChange } }) => (
-                  <Radio.Group value={value} onChange={onChange} style={{ marginTop: '0.25rem' }}>
+                  <Radio.Group value={value} onChange={onChange} className="mt-1">
                     <Space>
                       <Radio value="male">Male</Radio>
                       <Radio value="female">Female</Radio>
@@ -192,7 +191,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                     value={value ? dayjs(value) : null}
                     onChange={(val) => onChange(val ? val.format('YYYY-MM-DD') : '')}
                     size="large"
-                    style={{ width: '100%' }}
+                    className="w-full"
                     format="YYYY-MM-DD"
                   />
                 )}
@@ -233,7 +232,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
             name="isActive"
             control={control}
             render={({ field: { value, onChange } }) => (
-              <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" style={{ display: 'block' }} />
+              <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" className="block" />
             )}
           />
         </div>
