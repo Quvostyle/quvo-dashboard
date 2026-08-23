@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Modal, Select, Input, Row, Col, InputNumber, Switch, Upload, Button, Space, Divider } from 'antd';
 import { LuUpload, LuCirclePlay, LuTrash2 } from 'react-icons/lu';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
@@ -30,7 +30,18 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   onSave
 }) => {
   const rootCategories = categories.filter(c => !c.parentId);
-  const editingSubcategory = categories.find(c => c.id === editingSubcategoryId);
+  const editingSubcategory = useMemo(() => {
+    if (!editingSubcategoryId) return undefined;
+    for (const c of categories) {
+      if (c.id === editingSubcategoryId) return c;
+      if (c.children) {
+        const found = c.children.find(child => child.id === editingSubcategoryId);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  }, [categories, editingSubcategoryId]);
+
 
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<SubcategoryFormValues>({
     defaultValues: {

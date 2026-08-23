@@ -90,7 +90,14 @@ export const SubcategoriesTab: React.FC = () => {
     }
   };
 
-  const subcategories = useMemo(() => categories.filter(c => c.parentId), [categories]);
+  const subcategories = useMemo(() => {
+    return categories.reduce<Category[]>((acc, cat) => {
+      if (cat.children && cat.children.length > 0) {
+        acc.push(...cat.children);
+      }
+      return acc;
+    }, []);
+  }, [categories]);
 
   const columns = useMemo(() => [
     {
