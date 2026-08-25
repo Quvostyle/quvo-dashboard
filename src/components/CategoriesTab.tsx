@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Space, Tag, Modal, Form, message, Skeleton } from 'antd';
-import { LuPlus, LuPencil, LuTrash2, LuCircleCheck, LuBan } from 'react-icons/lu';
+import { LuPlus, LuPencil, LuTrash2, LuCircleCheck, LuBan, LuClipboardCheck } from 'react-icons/lu';
 import type { Category } from '../services/dataService';
 import {
   useGetCategoriesQuery,
@@ -11,6 +11,7 @@ import {
 } from '../store/apiSlice';
 import { CategoryModal } from './CategoryModal';
 import { SubcategoryModal } from './SubcategoryModal';
+import { FormStepBuilderModal } from './FormStepBuilderModal';
 import { Table } from './common/Table';
 
 export const CategoriesTab: React.FC = () => {
@@ -30,6 +31,17 @@ export const CategoriesTab: React.FC = () => {
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
   const [subcategoryFormRef] = Form.useForm();
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+
+  // Questionnaire Builder Modal State
+  const [showFormBuilderModal, setShowFormBuilderModal] = useState(false);
+  const [selectedSubcatId, setSelectedSubcatId] = useState<string | null>(null);
+  const [selectedSubcatName, setSelectedSubcatName] = useState<string>('');
+
+  const handleOpenFormBuilder = (subcatId: string, subcatName: string) => {
+    setSelectedSubcatId(subcatId);
+    setSelectedSubcatName(subcatName);
+    setShowFormBuilderModal(true);
+  };
 
   // Actions for Parent Categories
   const handleOpenAddCategory = () => {
@@ -207,6 +219,14 @@ export const CategoriesTab: React.FC = () => {
         const isSub = !!record.parentId;
         return (
           <Space size="small">
+            {isSub && (
+              <Button
+                className="action-btn action-btn-edit !text-amber-600 hover:!border-amber-600 hover:!text-amber-700"
+                icon={<LuClipboardCheck size={15} />}
+                onClick={() => handleOpenFormBuilder(record.id, record.name)}
+                title="Questionnaire Builder"
+              />
+            )}
             <Button
               className="action-btn action-btn-edit"
               icon={<LuPencil size={15} />}
@@ -316,6 +336,13 @@ export const CategoriesTab: React.FC = () => {
         form={subcategoryFormRef}
         onCancel={() => setShowSubcategoryModal(false)}
         onSave={handleSaveSubcategory}
+      />
+
+      <FormStepBuilderModal
+        open={showFormBuilderModal}
+        subCategoryId={selectedSubcatId}
+        subCategoryName={selectedSubcatName}
+        onCancel={() => setShowFormBuilderModal(false)}
       />
     </div>
   );

@@ -54,6 +54,22 @@ export const apiSlice = api.injectEndpoints({
       invalidatesTags: ['Category']
     }),
 
+    // Form Steps / Questionnaire Builder
+    getFormSteps: builder.query<any[], string>({
+      query: (subCategoryId) => `/admin/form-steps?subCategoryId=${subCategoryId}`,
+      transformResponse: (res) => unwrapArray(res, 'formSteps'),
+      providesTags: ['Category']
+    }),
+    bulkSyncFormSteps: builder.mutation<any, { subCategoryId: string; steps: any[] }>({
+      query: ({ subCategoryId, steps }) => ({
+        url: `/admin/form-steps/bulk-sync/${subCategoryId}`,
+        method: 'POST',
+        body: { steps }
+      }),
+      transformResponse: unwrapResponse,
+      invalidatesTags: ['Category']
+    }),
+
     // Providers
     getProviders: builder.query<Provider[], void>({
       query: () => '/admin/providers',
@@ -201,5 +217,7 @@ export const {
   useGetLookbookQuery,
   useSaveIntroNoteMutation,
   useAddLookbookItemMutation,
-  useDeleteLookbookItemMutation
+  useDeleteLookbookItemMutation,
+  useGetFormStepsQuery,
+  useBulkSyncFormStepsMutation
 } = apiSlice;

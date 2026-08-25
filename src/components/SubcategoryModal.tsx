@@ -93,8 +93,10 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
         </div>
       }
       open={open}
+      centered
       onCancel={onCancel}
       footer={null}
+      width={640}
       destroyOnClose
     >
       <form
@@ -176,13 +178,15 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Active State
               </label>
-              <Controller
-                name="isActive"
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" className="block" />
-                )}
-              />
+              <div className="h-[40px] flex items-center">
+                <Controller
+                  name="isActive"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" />
+                  )}
+                />
+              </div>
             </div>
           </Col>
         </Row>

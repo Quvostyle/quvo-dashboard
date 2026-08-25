@@ -81,8 +81,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         </div>
       }
       open={open}
+      centered
       onCancel={onCancel}
       footer={null}
+      width={580}
       destroyOnClose
       className="premium-modal"
     >
@@ -142,13 +144,15 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Active State
               </label>
-              <Controller
-                name="isActive"
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" className="block" />
-                )}
-              />
+              <div className="h-[40px] flex items-center">
+                <Controller
+                  name="isActive"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" />
+                  )}
+                />
+              </div>
             </div>
           </Col>
         </Row>

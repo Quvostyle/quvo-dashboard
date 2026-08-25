@@ -79,6 +79,7 @@ export interface IntakeRequest {
   photo_ids: string[];
   status: 'pending' | 'assigned' | 'completed';
   assigned_stylist_id: string | null; // Mapped to providerId
+  form_responses?: Record<string, any>;
   created_at: string;
 }
 

@@ -133,6 +133,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     <Modal
       title={`Intake Request: ${selectedOrder.occasion}`}
       open={visible}
+      centered
       onCancel={onCancel}
       footer={null}
       width={850}
@@ -191,6 +192,35 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <Descriptions.Item label="Tier Budget">{selectedOrder.budget || '—'}</Descriptions.Item>
           <Descriptions.Item label="Created">{new Date(selectedOrder.created_at).toLocaleDateString()}</Descriptions.Item>
         </Descriptions>
+
+        {/* Dynamic Questionnaire Responses */}
+        {selectedOrder.form_responses && Object.keys(selectedOrder.form_responses).length > 0 && (
+          <div className="mb-6 mt-6">
+            <strong className="text-[0.72rem] uppercase text-mute tracking-[0.08em] block mb-2">Intake Questionnaire Responses</strong>
+            <div className="bg-[#FAF8F5] border border-line rounded-2xl p-6">
+              <Row gutter={[16, 16]}>
+                {Object.entries(selectedOrder.form_responses).map(([key, val]) => {
+                  const displayValue = Array.isArray(val)
+                    ? val.join(', ')
+                    : typeof val === 'object'
+                    ? JSON.stringify(val)
+                    : String(val);
+
+                  const label = key
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+                  return (
+                    <Col xs={24} sm={12} md={8} key={key}>
+                      <div className="text-[10px] text-mute font-bold uppercase tracking-wider">{label}</div>
+                      <div className="text-sm font-medium mt-1 text-ink">{displayValue || '—'}</div>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
+          </div>
+        )}
 
         {selectedOrder.notes && (
           <div className="mb-6">

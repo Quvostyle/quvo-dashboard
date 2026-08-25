@@ -39,8 +39,8 @@ interface RateCardFormValues {
   categoryId: string;
   subcategoryId: string;
   providerId: string;
-  price: number;
-  strikePrice: number;
+  price?: number;
+  strikePrice?: number;
   weight: number;
   serviceType: "b2c" | "b2b";
   recommended: boolean;
@@ -78,8 +78,8 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
       categoryId: "",
       subcategoryId: "",
       providerId: "",
-      price: 499,
-      strikePrice: 699,
+      price: undefined,
+      strikePrice: undefined,
       weight: 1,
       serviceType: "b2c",
       recommended: false,
@@ -135,8 +135,8 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
           categoryId: "",
           subcategoryId: "",
           providerId: "",
-          price: 499,
-          strikePrice: 699,
+          price: undefined,
+          strikePrice: undefined,
           weight: 1,
           serviceType: "b2c",
           recommended: false,
@@ -153,8 +153,10 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
     <Modal
       title={editingRateCardId ? "Edit Rate Card" : "Create Service Rate Card"}
       open={open}
+      centered
       onCancel={onCancel}
       footer={null}
+      width={720}
       destroyOnClose
     >
       <form
@@ -384,13 +386,15 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Recommended
               </label>
-              <Controller
-                name="recommended"
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} className="block" />
-                )}
-              />
+              <div className="h-[40px] flex items-center">
+                <Controller
+                  name="recommended"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} />
+                  )}
+                />
+              </div>
             </div>
           </Col>
           <Col span={8}>
@@ -398,13 +402,15 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Best Deal
               </label>
-              <Controller
-                name="bestDeal"
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} className="block" />
-                )}
-              />
+              <div className="h-[40px] flex items-center">
+                <Controller
+                  name="bestDeal"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} />
+                  )}
+                />
+              </div>
             </div>
           </Col>
           <Col span={8}>
@@ -412,13 +418,15 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Active Card
               </label>
-              <Controller
-                name="active"
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <Switch checked={value} onChange={onChange} className="block" />
-                )}
-              />
+              <div className="h-[40px] flex items-center">
+                <Controller
+                  name="active"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} />
+                  )}
+                />
+              </div>
             </div>
           </Col>
         </Row>
