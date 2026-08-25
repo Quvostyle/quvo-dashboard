@@ -307,3 +307,264 @@
     font-size: 0.5rem;
   }
 }
+
+/* ==========================================================================
+   PREMIUM THEME FORM OVERRIDES (Indian-Luxe Style)
+   ========================================================================== */
+
+/* Modal Overrides */
+.ant-modal-content {
+  background-color: var(--color-bone) !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(58, 46, 36, 0.08) !important;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  background: rgba(184, 148, 106, 0.02) !important;
+  border-bottom: 1px solid var(--color-line) !important;
+  padding: 12px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ant-modal-title {
+  font-family: var(--font-serif) !important;
+  font-size: 1.35rem !important;
+  color: var(--color-ink) !important;
+  text-align: center !important;
+  width: 100% !important;
+  letter-spacing: 0.02em !important;
+}
+
+.ant-modal-body {
+  padding: 8px !important;
+}
+
+/* Label Typography */
+form label {
+  display: block;
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--color-cocoa) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Inputs, Numbers & Select Dropdown Styling */
+.ant-input,
+.ant-input-number,
+.ant-select-selector,
+.ant-input-password,
+textarea.ant-input {
+  background-color: #fafafa !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-sans) !important;
+  color: var(--color-ink) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+}
+
+.ant-input::placeholder,
+.ant-select-selection-placeholder {
+  color: var(--color-mute) !important;
+  opacity: 0.65 !important;
+}
+
+/* Hover and Focus Overrides */
+.ant-input:hover,
+.ant-input-number:hover,
+.ant-select-selector:hover,
+.ant-input-password:hover,
+textarea.ant-input:hover {
+  border-color: var(--color-mute) !important;
+  background-color: #ffffff !important;
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-number:focus,
+.ant-input-number-focused,
+.ant-select-focused .ant-select-selector,
+.ant-input-password-focused,
+textarea.ant-input:focus {
+  border-color: var(--color-gold) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(184, 148, 106, 0.15) !important;
+  outline: none !important;
+}
+
+/* Checkbox and Radio Selectors */
+.ant-radio-checked .ant-radio-inner {
+  border-color: var(--color-gold) !important;
+  background-color: var(--color-gold) !important;
+}
+
+.ant-radio-wrapper:hover .ant-radio-inner {
+  border-color: var(--color-gold) !important;
+}
+
+/* Switch Custom Premium Coloring */
+.ant-switch {
+  background-color: var(--color-line) !important;
+  border-color: var(--color-line) !important;
+  transition: all 0.2s ease !important;
+}
+
+.ant-switch-checked {
+  background-color: var(--color-gold) !important;
+  border-color: var(--color-gold) !important;
+}
+
+.ant-switch:hover {
+  opacity: 0.95;
+}
+
+/* Dashed Action Buttons */
+.ant-btn-dashed {
+  border: 1px dashed var(--color-gold) !important;
+  color: var(--color-gold) !important;
+  background-color: rgba(184, 148, 106, 0.01) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+}
+
+.ant-btn-dashed:hover {
+  border-color: var(--color-cocoa) !important;
+  color: var(--color-cocoa) !important;
+  background-color: rgba(127, 109, 94, 0.05) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+/* Form Action Buttons (Save, Cancel, Onboard, etc.) */
+.ant-btn-primary {
+  background-color: var(--color-gold) !important;
+  border-color: var(--color-gold) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  font-size: 0.8rem !important;
+  border-radius: 6px !important;
+  height: 42px !important;
+  padding: 0 1.5rem !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 4px rgba(184, 148, 106, 0.15) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--color-cocoa) !important;
+  border-color: var(--color-cocoa) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 12px rgba(127, 109, 94, 0.25) !important;
+}
+
+.ant-btn-default {
+  border: 1px solid var(--color-line) !important;
+  color: var(--color-cocoa) !important;
+  background-color: var(--color-bone) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  font-size: 0.8rem !important;
+  border-radius: 6px !important;
+  height: 42px !important;
+  padding: 0 1.5rem !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.ant-btn-default:hover {
+  border-color: var(--color-mute) !important;
+  color: var(--color-ink) !important;
+  background-color: #ffffff !important;
+}
+
+/* Segmented Media/Item Box Rows */
+.media-box-row {
+  background-color: rgba(184, 148, 106, 0.015) !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  margin-bottom: 0.75rem !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.media-box-row:hover {
+  border-color: var(--color-mute) !important;
+}
+
+/* Fix nested double borders on Ant Design prefix inputs (Affix wrappers) */
+.ant-input-affix-wrapper {
+  background-color: #fafafa !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 6px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+.ant-input-affix-wrapper:hover {
+  border-color: var(--color-mute) !important;
+  background-color: #ffffff !important;
+}
+
+.ant-input-affix-wrapper-focused,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper:focus-within {
+  border-color: var(--color-gold) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(184, 148, 106, 0.15) !important;
+}
+
+.ant-input-affix-wrapper > input.ant-input {
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  padding: 0 0 0 4px !important;
+}
+
+/* Fix Ant Design ghost buttons being unreadable with gold background override */
+.ant-btn-background-ghost.ant-btn-primary {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: var(--color-gold) !important;
+  border-color: var(--color-gold) !important;
+  box-shadow: none !important;
+}
+
+.ant-btn-background-ghost.ant-btn-primary:hover {
+  background-color: rgba(184, 148, 106, 0.05) !important;
+  color: var(--color-cocoa) !important;
+  border-color: var(--color-cocoa) !important;
+}
+
+/* Style default ghost buttons */
+.ant-btn-ghost {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: var(--color-gold) !important;
+  border-color: var(--color-gold) !important;
+  box-shadow: none !important;
+}
+
+.ant-btn-ghost:hover {
+  background-color: rgba(184, 148, 106, 0.05) !important;
+  color: var(--color-cocoa) !important;
+  border-color: var(--color-cocoa) !important;
+}
