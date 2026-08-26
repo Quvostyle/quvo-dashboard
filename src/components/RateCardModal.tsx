@@ -37,6 +37,7 @@ interface RateCardModalProps {
 
 interface RateCardFormValues {
   name: string;
+  description?: string;
   categoryId: string;
   subcategoryId: string;
   providerId: string;
@@ -80,6 +81,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
   } = useForm<RateCardFormValues>({
     defaultValues: {
       name: "",
+      description: "",
       categoryId: "",
       subcategoryId: "",
       providerId: "",
@@ -123,6 +125,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
       if (editingRateCard) {
         reset({
           name: editingRateCard.name,
+          description: editingRateCard.description || "",
           categoryId: editingRateCard.categoryId,
           subcategoryId: editingRateCard.subcategoryId,
           providerId: editingRateCard.providerId || "",
@@ -139,6 +142,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
       } else {
         reset({
           name: "",
+          description: "",
           categoryId: "",
           subcategoryId: "",
           providerId: "",
@@ -159,6 +163,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
   const handleFormSubmit = (values: RateCardFormValues) => {
     const formData = new FormData();
     formData.append("name", values.name);
+    formData.append("description", values.description || "");
     formData.append("categoryId", values.categoryId);
     formData.append("subcategoryId", values.subcategoryId);
     formData.append("providerId", values.providerId);
@@ -225,6 +230,23 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
               {errors.name.message}
             </span>
           )}
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <Input.TextArea
+                {...field}
+                placeholder="Enter service description (optional)"
+                rows={3}
+              />
+            )}
+          />
         </div>
 
         <Row gutter={16}>
