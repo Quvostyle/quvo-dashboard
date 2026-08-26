@@ -43,16 +43,17 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [assignStylist, { isLoading: isAssigning }] = useAssignStylistMutation();
-  const [updateOrder, { isLoading: isUpdatingStatus }] = useUpdateOrderMutation();
-  const [saveIntroNote, { isLoading: isSavingNote }] = useSaveIntroNoteMutation();
+  const [assignStylist] = useAssignStylistMutation();
+  const [updateOrder] = useUpdateOrderMutation();
+  const [saveIntroNote] = useSaveIntroNoteMutation();
   const [addLookbookItem, { isLoading: isAddingItem }] = useAddLookbookItemMutation();
-  const [deleteLookbookItem, { isLoading: isDeletingItem }] = useDeleteLookbookItemMutation();
+  const [deleteLookbookItem] = useDeleteLookbookItemMutation();
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<LookbookFormValues>({
     defaultValues: {

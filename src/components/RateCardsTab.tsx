@@ -58,7 +58,7 @@ export const RateCardsTab: React.FC = () => {
     setShowRateCardModal(true);
   };
 
-  const handleSaveRateCard = async (formData: FormData, values?: any) => {
+  const handleSaveRateCard = async (formData: FormData, _values?: any) => {
     try {
       if (editingRateCardId) {
         await updateRateCard({
