@@ -49,12 +49,14 @@ export const SubcategoriesTab: React.FC = () => {
       if (editingSubcategoryId) {
         await updateCategory({
           id: editingSubcategoryId,
-          name: values.name,
-          description: values.description || undefined,
-          sortOrder: values.sortOrder,
-          isActive: values.isActive,
-          parentId: values.parentId || null,
-          videos: values.videos || []
+          body: {
+            name: values.name,
+            description: values.description || undefined,
+            sortOrder: values.sortOrder,
+            isActive: values.isActive,
+            parentId: values.parentId || null,
+            videos: values.videos || []
+          }
         }).unwrap();
         message.success('Subcategory updated successfully.');
       } else {
@@ -76,7 +78,7 @@ export const SubcategoriesTab: React.FC = () => {
   // General Toggle / Delete
   const handleToggleSubcategoryActive = async (id: string, currentStatus: boolean, name: string) => {
     try {
-      await updateCategory({ id, isActive: !currentStatus }).unwrap();
+      await updateCategory({ id, body: { isActive: !currentStatus } }).unwrap();
       message.success(`Subcategory '${name}' is now ${!currentStatus ? 'Active' : 'Deactivated'}.`);
     } catch (e: any) {
       message.error(e.data || e.message || 'Error updating status');

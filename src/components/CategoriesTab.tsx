@@ -66,7 +66,7 @@ export const CategoriesTab: React.FC = () => {
     setShowCategoryModal(true);
   };
 
-  const handleSaveCategory = async (formData: FormData, values?: any) => {
+  const handleSaveCategory = async (formData: FormData, _values?: any) => {
     try {
       if (editingCategoryId) {
         await updateCategory({
@@ -129,7 +129,7 @@ export const CategoriesTab: React.FC = () => {
   // General Toggle / Delete
   const handleToggleCategoryActive = async (id: string, currentStatus: boolean, name: string) => {
     try {
-      await updateCategory({ id, isActive: !currentStatus }).unwrap();
+      await updateCategory({ id, body: { isActive: !currentStatus } }).unwrap();
       message.success(`'${name}' is now ${!currentStatus ? 'Active' : 'Deactivated'}.`);
     } catch (e: any) {
       message.error(e.data || e.message || 'Error modifying state');
