@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Input, Row, Col, InputNumber, Switch, Button, Upload, Space, Divider } from 'antd';
 import { LuUpload, LuCirclePlay, LuTrash2 } from 'react-icons/lu';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
@@ -8,8 +8,9 @@ interface CategoryModalProps {
   open: boolean;
   editingCategoryId: string | null;
   form: any; // unused now, kept for backward compatibility
+  loading?: boolean;
   onCancel: () => void;
-  onSave: (values: any) => void;
+  onSave: (formData: FormData, values: any) => void;
 }
 
 interface CategoryFormValues {
@@ -24,11 +25,15 @@ interface CategoryFormValues {
 export const CategoryModal: React.FC<CategoryModalProps> = ({
   open,
   editingCategoryId,
+  loading,
   onCancel,
   onSave
 }) => {
   const { data: categories = [] } = useGetCategoriesQuery();
   const editingCategory = categories.find((c) => c.id === editingCategoryId);
+
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [videoFiles, setVideoFiles] = useState<Record<number, File>>({});
 
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CategoryFormValues>({
     defaultValues: {
@@ -51,6 +56,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   useEffect(() => {
     if (open) {
+      setIconFile(null);
+      setVideoFiles({});
       if (editingCategory) {
         reset({
           name: editingCategory.name,
@@ -73,6 +80,30 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     }
   }, [open, editingCategory, reset]);
 
+  const handleFormSubmit = (values: CategoryFormValues) => {
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('description', values.description || '');
+    formData.append('sortOrder', String(values.sortOrder));
+    formData.append('isActive', String(!!values.isActive));
+
+    if (iconFile) {
+      formData.append('icon', iconFile, iconFile.name);
+    } else if (values.icon) {
+      formData.append('icon', values.icon);
+    }
+
+    (values.videos || []).forEach((v, index) => {
+      if (videoFiles[index]) {
+        formData.append('videos', videoFiles[index], videoFiles[index].name);
+      } else if (v) {
+        formData.append('videos', v);
+      }
+    });
+
+    onSave(formData, values);
+  };
+
   return (
     <Modal
       title={
@@ -89,7 +120,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       className="premium-modal"
     >
       <form
-        onSubmit={handleSubmit(onSave)}
+        onSubmit={handleSubmit(handleFormSubmit)}
         className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
@@ -176,6 +207,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               <Upload
                 accept="image/*"
                 beforeUpload={(file) => {
+                  setIconFile(file);
                   const reader = new FileReader();
                   reader.onload = () => {
                     setValue('icon', reader.result as string);
@@ -220,6 +252,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                       <Upload
                         accept="video/*"
                         beforeUpload={(file) => {
+                          setVideoFiles(prev => ({ ...prev, [index]: file }));
                           const reader = new FileReader();
                           reader.onload = () => {
                             setValue(`videos.${index}`, reader.result as string);
@@ -260,6 +293,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             type="primary"
             htmlType="submit"
             size="large"
+            loading={loading}
           >
             {editingCategoryId ? 'Save Category' : 'Create Category'}
           </Button>

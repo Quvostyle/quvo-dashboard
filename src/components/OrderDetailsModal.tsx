@@ -1,6 +1,6 @@
-import React from 'react';
-import { Modal, Row, Col, Select, Radio, Descriptions, Divider, Input, Button, Space, message } from 'antd';
-import { LuExternalLink, LuTrash2 } from 'react-icons/lu';
+import React, { useState } from 'react';
+import { Modal, Row, Col, Select, Radio, Descriptions, Divider, Input, Button, Space, message, Upload } from 'antd';
+import { LuExternalLink, LuTrash2, LuUpload } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
 import type { IntakeRequest } from '../services/dataService';
 import {
@@ -35,16 +35,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   onCancel,
   onOrderUpdated
 }) => {
+  if (!selectedOrder) return null;
+
   const { data: providers = [] } = useGetProvidersQuery();
   const { data: activeOrderLookbook } = useGetLookbookQuery(selectedOrder?.id || '', {
     skip: !selectedOrder || !visible
   });
 
-  const [assignStylist] = useAssignStylistMutation();
-  const [updateOrder] = useUpdateOrderMutation();
-  const [saveIntroNote] = useSaveIntroNoteMutation();
-  const [addLookbookItem] = useAddLookbookItemMutation();
-  const [deleteLookbookItem] = useDeleteLookbookItemMutation();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [assignStylist, { isLoading: isAssigning }] = useAssignStylistMutation();
+  const [updateOrder, { isLoading: isUpdatingStatus }] = useUpdateOrderMutation();
+  const [saveIntroNote, { isLoading: isSavingNote }] = useSaveIntroNoteMutation();
+  const [addLookbookItem, { isLoading: isAddingItem }] = useAddLookbookItemMutation();
+  const [deleteLookbookItem, { isLoading: isDeletingItem }] = useDeleteLookbookItemMutation();
 
   const {
     control,
@@ -61,8 +64,6 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       description: ''
     }
   });
-
-  if (!selectedOrder) return null;
 
   const handleAssignStylist = async (stylistId: string) => {
     try {
@@ -94,18 +95,25 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   };
 
   const handleAddLookbookItem = async (values: LookbookFormValues) => {
+    const formData = new FormData();
+    formData.append('title', values.title);
+    formData.append('category', values.category);
+    formData.append('price', values.price || '');
+    formData.append('product_link', values.product_link || '');
+    formData.append('description', values.description || '');
+
+    if (imageFile) {
+      formData.append('image_url', imageFile, imageFile.name);
+    } else if (values.image_url) {
+      formData.append('image_url', values.image_url);
+    }
+
     try {
       await addLookbookItem({
         orderId: selectedOrder.id,
-        item: {
-          title: values.title,
-          description: values.description || '',
-          image_url: values.image_url,
-          price: values.price || '',
-          product_link: values.product_link || '',
-          category: values.category
-        }
+        item: formData as any
       }).unwrap();
+      setImageFile(null);
       reset({
         title: '',
         category: 'top',
@@ -339,16 +347,39 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <Col span={12}>
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Clothing Image URL *
+                          Clothing Image URL or File *
                         </label>
-                        <Controller
-                          name="image_url"
-                          control={control}
-                          rules={{ required: 'Image URL is required' }}
-                          render={({ field }) => (
-                            <Input {...field} placeholder="Image Unsplash URL" size="large" className="!rounded-none" />
-                          )}
-                        />
+                        <Row gutter={8} align="middle">
+                          <Col span={16}>
+                            <Controller
+                              name="image_url"
+                              control={control}
+                              rules={{ required: 'Image URL or file is required' }}
+                              render={({ field }) => (
+                                <Input {...field} placeholder="Image Unsplash URL or upload file" size="large" className="!rounded-none" />
+                              )}
+                            />
+                          </Col>
+                          <Col span={8}>
+                            <Upload
+                              accept="image/*"
+                              beforeUpload={(file) => {
+                                setImageFile(file);
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                  setValue('image_url', reader.result as string, { shouldValidate: true });
+                                };
+                                reader.readAsDataURL(file);
+                                return false;
+                              }}
+                              showUploadList={false}
+                            >
+                              <Button icon={<LuUpload size={14} />} size="large" className="w-full !rounded-none">
+                                Upload
+                              </Button>
+                            </Upload>
+                          </Col>
+                        </Row>
                         {errors.image_url && (
                           <span className="text-red-500 text-sm block mt-1">
                             {errors.image_url.message}
@@ -389,6 +420,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       type="primary"
                       htmlType="submit"
                       size="large"
+                      loading={isAddingItem}
                     >
                       Curate Item
                     </Button>

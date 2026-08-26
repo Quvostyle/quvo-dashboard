@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Select, Input, Row, Col, InputNumber, Switch, Upload, Button, Space, Divider } from 'antd';
 import { LuUpload, LuCirclePlay, LuTrash2 } from 'react-icons/lu';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
@@ -9,8 +9,9 @@ interface SubcategoryModalProps {
   editingSubcategoryId: string | null;
   categories: Category[];
   form: any; // unused now, kept for backward compatibility
+  loading?: boolean;
   onCancel: () => void;
-  onSave: (values: any) => void;
+  onSave: (formData: FormData, values: any) => void;
 }
 
 interface SubcategoryFormValues {
@@ -26,6 +27,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   open,
   editingSubcategoryId,
   categories,
+  loading,
   onCancel,
   onSave
 }) => {
@@ -42,6 +44,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     return undefined;
   }, [categories, editingSubcategoryId]);
 
+  const [videoFiles, setVideoFiles] = useState<Record<number, File>>({});
 
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<SubcategoryFormValues>({
     defaultValues: {
@@ -63,6 +66,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
   useEffect(() => {
     if (open) {
+      setVideoFiles({});
       if (editingSubcategory) {
         reset({
           parentId: editingSubcategory.parentId || '',
@@ -85,6 +89,25 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     }
   }, [open, editingSubcategory, reset]);
 
+  const handleFormSubmit = (values: SubcategoryFormValues) => {
+    const formData = new FormData();
+    formData.append('parentId', values.parentId);
+    formData.append('name', values.name);
+    formData.append('description', values.description || '');
+    formData.append('sortOrder', String(values.sortOrder));
+    formData.append('isActive', String(!!values.isActive));
+
+    (values.videos || []).forEach((v, index) => {
+      if (videoFiles[index]) {
+        formData.append('videos', videoFiles[index], videoFiles[index].name);
+      } else if (v) {
+        formData.append('videos', v);
+      }
+    });
+
+    onSave(formData, values);
+  };
+
   return (
     <Modal
       title={
@@ -100,7 +123,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
       destroyOnClose
     >
       <form
-        onSubmit={handleSubmit(onSave)}
+        onSubmit={handleSubmit(handleFormSubmit)}
         className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
@@ -216,6 +239,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                       <Upload
                         accept="video/*"
                         beforeUpload={(file) => {
+                          setVideoFiles(prev => ({ ...prev, [index]: file }));
                           const reader = new FileReader();
                           reader.onload = () => {
                             setValue(`videos.${index}`, reader.result as string);
@@ -256,6 +280,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
             type="primary"
             htmlType="submit"
             size="large"
+            loading={loading}
           >
             {editingSubcategoryId ? 'Save Subcategory' : 'Create Subcategory'}
           </Button>

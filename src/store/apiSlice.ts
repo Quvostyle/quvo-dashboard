@@ -18,7 +18,7 @@ export const apiSlice = api.injectEndpoints({
       transformResponse: (res) => unwrapArray(res, 'categories'),
       providesTags: ['Category']
     }),
-    addCategory: builder.mutation<Category, Partial<Category>>({
+    addCategory: builder.mutation<Category, FormData | Partial<Category>>({
       query: (cat) => ({
         url: '/admin/categories',
         method: 'POST',
@@ -27,17 +27,27 @@ export const apiSlice = api.injectEndpoints({
       transformResponse: unwrapResponse,
       invalidatesTags: ['Category']
     }),
-    addSubcategory: builder.mutation<Category, { parentId: string } & Partial<Category>>({
-      query: ({ parentId, ...body }) => ({
-        url: `/admin/categories/${parentId}/subcategories`,
-        method: 'POST',
-        body
-      }),
+    addSubcategory: builder.mutation<Category, { parentId: string; body: FormData } | ({ parentId: string } & Partial<Category>)>({
+      query: (args) => {
+        if ('body' in args && args.body instanceof FormData) {
+          return {
+            url: `/admin/categories/${args.parentId}/subcategories`,
+            method: 'POST',
+            body: args.body
+          };
+        }
+        const { parentId, ...body } = args as any;
+        return {
+          url: `/admin/categories/${parentId}/subcategories`,
+          method: 'POST',
+          body
+        };
+      },
       transformResponse: unwrapResponse,
       invalidatesTags: ['Category']
     }),
-    updateCategory: builder.mutation<Category, { id: string } & Partial<Category>>({
-      query: ({ id, ...body }) => ({
+    updateCategory: builder.mutation<Category, { id: string; body: FormData | Partial<Category> }>({
+      query: ({ id, body }) => ({
         url: `/admin/categories/${id}`,
         method: 'PATCH',
         body
@@ -76,17 +86,17 @@ export const apiSlice = api.injectEndpoints({
       transformResponse: (res) => unwrapArray(res, 'providers'),
       providesTags: ['Provider']
     }),
-    addProvider: builder.mutation<Provider, Omit<Provider, 'id'>>({
-      query: (prov) => ({
+    addProvider: builder.mutation<Provider, FormData | Omit<Provider, 'id'>>({
+      query: (body) => ({
         url: '/admin/providers',
         method: 'POST',
-        body: prov
+        body
       }),
       transformResponse: unwrapResponse,
       invalidatesTags: ['Provider']
     }),
-    updateProvider: builder.mutation<Provider, { id: string } & Partial<Provider>>({
-      query: ({ id, ...body }) => ({
+    updateProvider: builder.mutation<Provider, { id: string; body: FormData | Partial<Provider> }>({
+      query: ({ id, body }) => ({
         url: `/admin/providers/${id}`,
         method: 'PATCH',
         body
@@ -109,7 +119,7 @@ export const apiSlice = api.injectEndpoints({
       transformResponse: (res) => unwrapArray(res, 'rateCards'),
       providesTags: ['RateCard']
     }),
-    addRateCard: builder.mutation<RateCard, Omit<RateCard, 'id'>>({
+    addRateCard: builder.mutation<RateCard, FormData | Omit<RateCard, 'id'>>({
       query: (rc) => ({
         url: '/rate-cards',
         method: 'POST',
@@ -118,8 +128,8 @@ export const apiSlice = api.injectEndpoints({
       transformResponse: unwrapResponse,
       invalidatesTags: ['RateCard']
     }),
-    updateRateCard: builder.mutation<RateCard, { id: string } & Partial<RateCard>>({
-      query: ({ id, ...body }) => ({
+    updateRateCard: builder.mutation<RateCard, { id: string; body: FormData | Partial<RateCard> }>({
+      query: ({ id, body }) => ({
         url: `/rate-cards/${id}`,
         method: 'PATCH',
         body
@@ -176,7 +186,7 @@ export const apiSlice = api.injectEndpoints({
       transformResponse: unwrapResponse,
       invalidatesTags: (_result, _error, { orderId }) => [{ type: 'Lookbook', id: orderId }]
     }),
-    addLookbookItem: builder.mutation<Lookbook, { orderId: string, item: Omit<LookbookItem, 'id'> }>({
+    addLookbookItem: builder.mutation<Lookbook, { orderId: string, item: FormData | Omit<LookbookItem, 'id'> }>({
       query: ({ orderId, item }) => ({
         url: `/lookbooks/${orderId}/items`,
         method: 'POST',

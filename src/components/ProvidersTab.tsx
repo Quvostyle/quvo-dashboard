@@ -14,9 +14,11 @@ import { Table } from './common/Table';
 export const ProvidersTab: React.FC = () => {
   const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery();
 
-  const [addProvider] = useAddProviderMutation();
-  const [updateProvider] = useUpdateProviderMutation();
+  const [addProvider, { isLoading: isAddingProvider }] = useAddProviderMutation();
+  const [updateProvider, { isLoading: isUpdatingProvider }] = useUpdateProviderMutation();
   const [deleteProvider] = useDeleteProviderMutation();
+
+  const isSavingProvider = isAddingProvider || isUpdatingProvider;
 
 
 
@@ -39,30 +41,28 @@ export const ProvidersTab: React.FC = () => {
       mobile: prov.mobile,
       gender: prov.gender,
       birth_date: prov.birth_date ? prov.birth_date.split('T')[0] : '',
+      profilePic: prov.profilePic || '',
       address: prov.address,
+      experience: prov.experience ? String(prov.experience) : '',
+      specialties: Array.isArray(prov.specialties) ? prov.specialties : typeof prov.specialties === 'string' ? JSON.parse(prov.specialties || '[]') : [],
+      subcategories: Array.isArray(prov.subcategories) ? prov.subcategories : typeof prov.subcategories === 'string' ? JSON.parse(prov.subcategories || '[]') : [],
+      startingFrom: prov.startingFrom ? String(prov.startingFrom) : '',
+      bioDetails: prov.bioDetails || '',
+      portfolioUrls: Array.isArray(prov.ProtfolioImageUploads) ? prov.ProtfolioImageUploads : [],
       isActive: prov.isActive
     });
     setShowProviderModal(true);
   };
 
-  const handleSaveProvider = async (values: any) => {
-    const provData = {
-      full_name: values.full_name,
-      email: values.email,
-      mobile: values.mobile,
-      gender: values.gender,
-      birth_date: values.birth_date ? new Date(values.birth_date).toISOString() : new Date().toISOString(),
-      address: values.address,
-      isActive: !!values.isActive
-    };
-
+  const handleSaveProvider = async (formData: FormData, values?: any) => {
+    const providerName = values?.full_name || (formData.get('full_name') as string) || 'Provider';
     try {
       if (editingProviderId) {
-        await updateProvider({ id: editingProviderId, ...provData }).unwrap();
-        message.success(`Provider '${values.full_name}' updated.`);
+        await updateProvider({ id: editingProviderId, body: formData }).unwrap();
+        message.success(`Provider '${providerName}' updated.`);
       } else {
-        await addProvider(provData).unwrap();
-        message.success(`Provider '${values.full_name}' created.`);
+        await addProvider(formData).unwrap();
+        message.success(`Provider '${providerName}' created.`);
       }
       setShowProviderModal(false);
     } catch (e: any) {
@@ -79,8 +79,6 @@ export const ProvidersTab: React.FC = () => {
     }
   };
 
-
-
   const columns = useMemo(() => [
     {
       Header: 'Partner Profile',
@@ -91,17 +89,21 @@ export const ProvidersTab: React.FC = () => {
           ? new Date(record.birth_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
           : '—';
         const genderColors: Record<string, string> = {
+          Male: 'blue',
           male: 'blue',
+          Female: 'magenta',
           female: 'magenta',
+          Other: 'purple',
           other: 'purple'
         };
         return (
           <div className="flex items-center gap-3">
             <Avatar
+              src={record.profilePic}
               className="!bg-ink !text-[#FFF8F0] !font-bold !text-[0.9rem]"
-              size={40}
+              size={44}
             >
-              {record.full_name ? record.full_name.charAt(0).toUpperCase() : 'P'}
+              {!record.profilePic && (record.full_name ? record.full_name.charAt(0).toUpperCase() : 'P')}
             </Avatar>
             <div>
               <a
@@ -116,10 +118,58 @@ export const ProvidersTab: React.FC = () => {
                 <Tag color={genderColors[record.gender] || 'default'} className="capitalize !rounded-[10px] !py-0 !px-1.5 text-[0.68rem] leading-[1.2] !m-0">
                   {record.gender}
                 </Tag>
-                <span>•</span>
-                <span>🎂 {birthDateStr}</span>
+                {record.experience && (
+                  <>
+                    <span>•</span>
+                    <span>{record.experience} yrs exp</span>
+                  </>
+                )}
+                {birthDateStr !== '—' && (
+                  <>
+                    <span>•</span>
+                    <span>🎂 {birthDateStr}</span>
+                  </>
+                )}
               </div>
             </div>
+          </div>
+        );
+      }
+    },
+    {
+      Header: 'Details & Specialties',
+      id: 'details_specialties',
+      Cell: ({ row }: any) => {
+        const record = row.original;
+        let specs: string[] = [];
+        if (Array.isArray(record.specialties)) {
+          specs = record.specialties;
+        } else if (typeof record.specialties === 'string') {
+          try { specs = JSON.parse(record.specialties); } catch { specs = record.specialties ? [record.specialties] : []; }
+        }
+
+        return (
+          <div className="flex flex-col gap-1 text-[0.82rem]">
+            {record.startingFrom && (
+              <div className="font-semibold text-green-700">
+                Starting From: ₹{record.startingFrom}
+              </div>
+            )}
+            {specs.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {specs.slice(0, 3).map((s, idx) => (
+                  <Tag key={idx} color="gold" className="!text-[0.68rem] !py-0 !px-1.5 !m-0">
+                    {s}
+                  </Tag>
+                ))}
+                {specs.length > 3 && <span className="text-[0.7rem] text-mute">+{specs.length - 3}</span>}
+              </div>
+            )}
+            {record.bioDetails && (
+              <div className="text-mute text-[0.75rem] line-clamp-1 italic max-w-[220px]" title={record.bioDetails}>
+                "{record.bioDetails}"
+              </div>
+            )}
           </div>
         );
       }
@@ -141,7 +191,7 @@ export const ProvidersTab: React.FC = () => {
                 <LuPhone size={12} /> {record.mobile}
               </a>
             </div>
-            <div className="flex items-start gap-1 text-mute max-w-[240px]">
+            <div className="flex items-start gap-1 text-mute max-w-[200px]">
               <LuHouse size={12} className="mt-0.5 shrink-0" />
               <span className="text-[0.8rem] leading-[1.2]" title={record.address}>{record.address}</span>
             </div>
@@ -249,6 +299,7 @@ export const ProvidersTab: React.FC = () => {
         open={showProviderModal}
         editingProviderId={editingProviderId}
         form={providerForm}
+        loading={isSavingProvider}
         onCancel={() => setShowProviderModal(false)}
         onSave={handleSaveProvider}
       />

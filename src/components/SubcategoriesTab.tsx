@@ -14,9 +14,11 @@ import { Table } from './common/Table';
 export const SubcategoriesTab: React.FC = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
 
-  const [addSubcategory] = useAddSubcategoryMutation();
-  const [updateCategory] = useUpdateCategoryMutation();
+  const [addSubcategory, { isLoading: isAddingSubcat }] = useAddSubcategoryMutation();
+  const [updateCategory, { isLoading: isUpdatingCat }] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
+
+  const isSavingSubcategory = isAddingSubcat || isUpdatingCat;
 
   // Subcategory Modal State (Add/Edit)
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
@@ -246,6 +248,7 @@ export const SubcategoriesTab: React.FC = () => {
         editingSubcategoryId={editingSubcategoryId}
         categories={categories}
         form={subcategoryFormRef}
+        loading={isSavingSubcategory}
         onCancel={() => setShowSubcategoryModal(false)}
         onSave={handleSaveSubcategory}
       />

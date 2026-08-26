@@ -18,9 +18,11 @@ export const RateCardsTab: React.FC = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
   const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery();
 
-  const [addRateCard] = useAddRateCardMutation();
-  const [updateRateCard] = useUpdateRateCardMutation();
+  const [addRateCard, { isLoading: isAddingRateCard }] = useAddRateCardMutation();
+  const [updateRateCard, { isLoading: isUpdatingRateCard }] = useUpdateRateCardMutation();
   const [deleteRateCard] = useDeleteRateCardMutation();
+
+  const isSavingRateCard = isAddingRateCard || isUpdatingRateCard;
 
   // Rate Card Modal State (Add/Edit)
   const [showRateCardModal, setShowRateCardModal] = useState(false);
@@ -56,16 +58,16 @@ export const RateCardsTab: React.FC = () => {
     setShowRateCardModal(true);
   };
 
-  const handleSaveRateCard = async (values: any) => {
+  const handleSaveRateCard = async (formData: FormData, values?: any) => {
     try {
       if (editingRateCardId) {
         await updateRateCard({
           id: editingRateCardId,
-          ...values
+          body: formData
         }).unwrap();
         message.success('Rate card updated successfully.');
       } else {
-        await addRateCard(values).unwrap();
+        await addRateCard(formData).unwrap();
         message.success('Rate card created successfully.');
       }
       setShowRateCardModal(false);
@@ -244,6 +246,7 @@ export const RateCardsTab: React.FC = () => {
         categories={categories}
         providers={providers}
         form={rateCardForm}
+        loading={isSavingRateCard}
         onCancel={() => setShowRateCardModal(false)}
         onSave={handleSaveRateCard}
       />

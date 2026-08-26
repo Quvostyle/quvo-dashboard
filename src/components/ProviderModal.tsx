@@ -1,58 +1,154 @@
-import React, { useEffect } from 'react';
-import { Modal, Input, Row, Col, Radio, Switch, Button, Space, DatePicker } from 'antd';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Modal, Input, Row, Col, Radio, Switch, Button, Space, DatePicker, Upload, Select, Divider } from 'antd';
+import { LuUpload, LuTrash2, LuImage } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
-import { useGetProvidersQuery } from '../store/apiSlice';
+import { useGetProvidersQuery, useGetCategoriesQuery } from '../store/apiSlice';
 import dayjs from 'dayjs';
 
 interface ProviderModalProps {
   open: boolean;
   editingProviderId: string | null;
-  form: any; // unused now, kept for backward compatibility
+  form?: any; // kept for backward compatibility
+  loading?: boolean;
   onCancel: () => void;
-  onSave: (values: any) => void;
+  onSave: (formData: FormData, values: any) => void;
 }
 
 interface ProviderFormValues {
   full_name: string;
   email: string;
   mobile: string;
-  gender: 'male' | 'female' | 'other';
-  birth_date: string;
+  gender: string;
+  birth_date?: string;
   address: string;
+  experience?: string;
+  specialties?: string[];
+  subcategories?: string[];
+  startingFrom?: string;
+  bioDetails?: string;
+  profilePic: string;
+  portfolioUrls?: string[];
   isActive: boolean;
 }
 
 export const ProviderModal: React.FC<ProviderModalProps> = ({
   open,
   editingProviderId,
+  loading,
   onCancel,
   onSave
 }) => {
   const { data: providers = [] } = useGetProvidersQuery();
+  const { data: categories = [] } = useGetCategoriesQuery();
   const editingProvider = providers.find(p => p.id === editingProviderId);
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<ProviderFormValues>({
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
+
+  // Subcategories options built from categories store
+  const subcategoryOptions = useMemo(() => {
+    const subs: { label: string; value: string }[] = [];
+    const added = new Set<string>();
+
+    categories.forEach(c => {
+      if (c.parentId && !added.has(c.name)) {
+        added.add(c.name);
+        subs.push({ label: c.name, value: c.name });
+      }
+      if (c.children) {
+        c.children.forEach(child => {
+          if (!added.has(child.name)) {
+            added.add(child.name);
+            subs.push({ label: child.name, value: child.name });
+          }
+        });
+      }
+    });
+
+    // Default fallback options if categories array is empty
+    if (subs.length === 0) {
+      ['Hair Care', 'Skin Care', 'Styling', 'Beard & Grooming', 'Bridal & Makeup'].forEach(s => {
+        subs.push({ label: s, value: s });
+      });
+    }
+
+    return subs;
+  }, [categories]);
+
+  const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ProviderFormValues>({
     defaultValues: {
       full_name: '',
       email: '',
       mobile: '',
-      gender: 'male',
+      gender: 'Male',
       birth_date: '',
       address: '',
+      experience: '',
+      specialties: [],
+      subcategories: [],
+      startingFrom: '',
+      bioDetails: '',
+      profilePic: '',
+      portfolioUrls: [],
       isActive: true
     }
   });
 
+  const profilePicValue = watch('profilePic');
+  const portfolioUrlsValue = watch('portfolioUrls') || [];
+
   useEffect(() => {
     if (open) {
+      setAttachedFile(null);
+      setPortfolioFiles([]);
       if (editingProvider) {
+        let specs: string[] = [];
+        if (Array.isArray(editingProvider.specialties)) {
+          specs = editingProvider.specialties;
+        } else if (typeof editingProvider.specialties === 'string') {
+          try {
+            specs = JSON.parse(editingProvider.specialties);
+          } catch {
+            specs = editingProvider.specialties ? [editingProvider.specialties] : [];
+          }
+        }
+
+        let subcats: string[] = [];
+        if (Array.isArray(editingProvider.subcategories)) {
+          subcats = editingProvider.subcategories;
+        } else if (typeof editingProvider.subcategories === 'string') {
+          try {
+            subcats = JSON.parse(editingProvider.subcategories);
+          } catch {
+            subcats = editingProvider.subcategories ? [editingProvider.subcategories] : [];
+          }
+        }
+
+        let portUrls: string[] = [];
+        if (Array.isArray(editingProvider.ProtfolioImageUploads)) {
+          portUrls = editingProvider.ProtfolioImageUploads;
+        } else if (typeof editingProvider.ProtfolioImageUploads === 'string') {
+          try {
+            portUrls = JSON.parse(editingProvider.ProtfolioImageUploads);
+          } catch {
+            portUrls = editingProvider.ProtfolioImageUploads ? [editingProvider.ProtfolioImageUploads] : [];
+          }
+        }
+
         reset({
           full_name: editingProvider.full_name,
           email: editingProvider.email,
           mobile: editingProvider.mobile,
-          gender: editingProvider.gender,
+          gender: editingProvider.gender || 'Male',
           birth_date: editingProvider.birth_date ? editingProvider.birth_date.split('T')[0] : '',
           address: editingProvider.address,
+          experience: editingProvider.experience ? String(editingProvider.experience) : '',
+          specialties: specs,
+          subcategories: subcats,
+          startingFrom: editingProvider.startingFrom ? String(editingProvider.startingFrom) : '',
+          bioDetails: editingProvider.bioDetails || '',
+          profilePic: editingProvider.profilePic || '',
+          portfolioUrls: portUrls,
           isActive: editingProvider.isActive
         });
       } else {
@@ -60,14 +156,69 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
           full_name: '',
           email: '',
           mobile: '',
-          gender: 'male',
+          gender: 'Male',
           birth_date: '',
           address: '',
+          experience: '',
+          specialties: ['Haircut', 'Coloring', 'Beard Trim'],
+          subcategories: ['Hair Care'],
+          startingFrom: '',
+          bioDetails: '',
+          profilePic: '',
+          portfolioUrls: [],
           isActive: true
         });
       }
     }
   }, [open, editingProvider, reset]);
+
+  const handleFormSubmit = (values: ProviderFormValues) => {
+    const formData = new FormData();
+    formData.append('full_name', values.full_name);
+    formData.append('email', values.email);
+    formData.append('mobile', values.mobile);
+    formData.append('gender', values.gender || 'Male');
+    if (values.birth_date) {
+      formData.append('birth_date', values.birth_date);
+    }
+    formData.append('address', values.address);
+    if (values.experience) {
+      formData.append('experience', String(values.experience));
+    }
+    if (values.specialties && values.specialties.length > 0) {
+      formData.append('specialties', JSON.stringify(values.specialties));
+    }
+    if (values.subcategories && values.subcategories.length > 0) {
+      formData.append('subcategories', JSON.stringify(values.subcategories));
+    }
+    formData.append('isActive', String(!!values.isActive));
+    if (values.startingFrom) {
+      formData.append('startingFrom', String(values.startingFrom));
+    }
+    if (values.bioDetails) {
+      formData.append('bioDetails', values.bioDetails);
+    }
+
+    // Profile Pic
+    if (attachedFile) {
+      formData.append('profilePic', attachedFile, attachedFile.name);
+    } else if (values.profilePic) {
+      formData.append('profilePic', values.profilePic);
+    }
+
+    // Portfolio Images (ProtfolioImageUploads key as in backend curl spec)
+    portfolioFiles.forEach(file => {
+      formData.append('ProtfolioImageUploads', file, file.name);
+    });
+
+    (values.portfolioUrls || []).forEach(url => {
+      if (url && !url.startsWith('data:')) {
+        formData.append('ProtfolioImageUploads', url);
+      }
+    });
+
+    onSave(formData, values);
+  };
 
   return (
     <Modal
@@ -80,78 +231,138 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
       centered
       onCancel={onCancel}
       footer={null}
-      width={720}
+      width={760}
       destroyOnClose
       className="premium-modal"
     >
       <form
-        onSubmit={handleSubmit(onSave)}
-        className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
+        onSubmit={handleSubmit(handleFormSubmit)}
+        className="space-y-4 mt-4 max-h-[75vh] overflow-y-auto pr-1"
       >
+        {/* Profile Picture */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name *
+            Profile Picture *
           </label>
-          <Controller
-            name="full_name"
-            control={control}
-            rules={{ required: 'Full name is required' }}
-            render={({ field }) => (
-              <Input {...field} placeholder="e.g. John Doe" size="large" />
-            )}
-          />
-          {errors.full_name && (
+          <Row gutter={8} align="middle">
+            <Col span={17}>
+              <Controller
+                name="profilePic"
+                control={control}
+                rules={{ required: 'Profile picture is required' }}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Enter image URL or attach image file" size="large" />
+                )}
+              />
+            </Col>
+            <Col span={7}>
+              <Upload
+                accept="image/*"
+                beforeUpload={(file) => {
+                  setAttachedFile(file);
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setValue('profilePic', reader.result as string, { shouldValidate: true });
+                  };
+                  reader.readAsDataURL(file);
+                  return false;
+                }}
+                showUploadList={false}
+              >
+                <Button icon={<LuUpload size={16} />} className="w-full" size="large">
+                  Attach Image
+                </Button>
+              </Upload>
+            </Col>
+          </Row>
+          {errors.profilePic && (
             <span className="text-red-500 text-sm block mt-1">
-              {errors.full_name.message}
+              {errors.profilePic.message}
             </span>
+          )}
+          {profilePicValue && (
+            <div className="mt-3 flex items-center gap-3 bg-[rgba(0,0,0,0.02)] p-2.5 rounded border border-dashed border-line">
+              <img
+                src={profilePicValue}
+                alt="Profile Preview"
+                className="w-12 h-12 rounded-full object-cover border border-gray-200"
+              />
+              <span className="text-xs text-mute">Profile Picture Preview</span>
+            </div>
           )}
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address *
-          </label>
-          <Controller
-            name="email"
-            control={control}
-            rules={{
-              required: 'Email is required',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email address'
-              }
-            }}
-            render={({ field }) => (
-              <Input {...field} placeholder="e.g. john.provider@example.com" size="large" />
-            )}
-          />
-          {errors.email && (
-            <span className="text-red-500 text-sm block mt-1">
-              {errors.email.message}
-            </span>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Mobile Number *
-          </label>
-          <Controller
-            name="mobile"
-            control={control}
-            rules={{ required: 'Mobile number is required' }}
-            render={({ field }) => (
-              <Input {...field} placeholder="e.g. +919876543210" size="large" />
-            )}
-          />
-          {errors.mobile && (
-            <span className="text-red-500 text-sm block mt-1">
-              {errors.mobile.message}
-            </span>
-          )}
-        </div>
+        {/* Basic Information */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name *
+              </label>
+              <Controller
+                name="full_name"
+                control={control}
+                rules={{ required: 'Full name is required' }}
+                render={({ field }) => (
+                  <Input {...field} placeholder="e.g. Ahmed Khan" size="large" />
+                )}
+              />
+              {errors.full_name && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.full_name.message}
+                </span>
+              )}
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address *
+              </label>
+              <Controller
+                name="email"
+                control={control}
+                rules={{
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address'
+                  }
+                }}
+                render={({ field }) => (
+                  <Input {...field} placeholder="e.g. ahmed.khan@example.com" size="large" />
+                )}
+              />
+              {errors.email && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.email.message}
+                </span>
+              )}
+            </div>
+          </Col>
+        </Row>
 
         <Row gutter={16}>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mobile Number *
+              </label>
+              <Controller
+                name="mobile"
+                control={control}
+                rules={{ required: 'Mobile number is required' }}
+                render={({ field }) => (
+                  <Input {...field} placeholder="e.g. +923001234567" size="large" />
+                )}
+              />
+              {errors.mobile && (
+                <span className="text-red-500 text-sm block mt-1">
+                  {errors.mobile.message}
+                </span>
+              )}
+            </div>
+          </Col>
           <Col span={12}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -164,9 +375,9 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 render={({ field: { value, onChange } }) => (
                   <Radio.Group value={value} onChange={onChange} className="mt-1">
                     <Space>
-                      <Radio value="male">Male</Radio>
-                      <Radio value="female">Female</Radio>
-                      <Radio value="other">Other</Radio>
+                      <Radio value="Male">Male</Radio>
+                      <Radio value="Female">Female</Radio>
+                      <Radio value="Other">Other</Radio>
                     </Space>
                   </Radio.Group>
                 )}
@@ -178,15 +389,17 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
               )}
             </div>
           </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={12}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Birth Date *
+                Birth Date (Optional)
               </label>
               <Controller
                 name="birth_date"
                 control={control}
-                rules={{ required: 'Birth date is required' }}
                 render={({ field: { value, onChange, ...fieldProps } }) => (
                   <DatePicker
                     {...fieldProps}
@@ -198,15 +411,58 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                   />
                 )}
               />
-              {errors.birth_date && (
-                <span className="text-red-500 text-sm block mt-1">
-                  {errors.birth_date.message}
-                </span>
-              )}
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Experience (Years)
+              </label>
+              <Controller
+                name="experience"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="e.g. 5" size="large" />
+                )}
+              />
             </div>
           </Col>
         </Row>
 
+        <Row gutter={16}>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Starting Rate (₹)
+              </label>
+              <Controller
+                name="startingFrom"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="e.g. 500" size="large" />
+                )}
+              />
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Active State
+              </label>
+              <div className="h-[40px] flex items-center">
+                <Controller
+                  name="isActive"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" />
+                  )}
+                />
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+        {/* Address */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Full Address *
@@ -216,7 +472,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
             control={control}
             rules={{ required: 'Address is required' }}
             render={({ field }) => (
-              <Input.TextArea {...field} placeholder="Enter provider base location..." rows={3} />
+              <Input.TextArea {...field} placeholder="e.g. 123 Main Street, Karachi" rows={2} />
             )}
           />
           {errors.address && (
@@ -226,19 +482,131 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
           )}
         </div>
 
+        {/* Specialties & Subcategories */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Specialties
+              </label>
+              <Controller
+                name="specialties"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    mode="tags"
+                    placeholder="e.g. Haircut, Coloring, Beard Trim"
+                    size="large"
+                    className="w-full"
+                    options={[
+                      { label: 'Haircut', value: 'Haircut' },
+                      { label: 'Coloring', value: 'Coloring' },
+                      { label: 'Beard Trim', value: 'Beard Trim' },
+                      { label: 'Styling', value: 'Styling' },
+                      { label: 'Facial', value: 'Facial' }
+                    ]}
+                  />
+                )}
+              />
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Subcategories
+              </label>
+              <Controller
+                name="subcategories"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    mode="multiple"
+                    placeholder="e.g. Hair Care"
+                    size="large"
+                    className="w-full"
+                    options={subcategoryOptions}
+                  />
+                )}
+              />
+            </div>
+          </Col>
+        </Row>
+
+        {/* Bio Details */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Active State
+            Bio / Professional Details
           </label>
-          <div className="h-[40px] flex items-center">
-            <Controller
-              name="isActive"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Switch checked={value} onChange={onChange} checkedChildren="Active" unCheckedChildren="Inactive" />
-              )}
-            />
+          <Controller
+            name="bioDetails"
+            control={control}
+            render={({ field }) => (
+              <Input.TextArea
+                {...field}
+                placeholder="e.g. Professional barber with 5 years of experience in modern hair styling."
+                rows={3}
+              />
+            )}
+          />
+        </div>
+
+        <Divider className="!my-6">Portfolio Image Uploads</Divider>
+
+        {/* Portfolio Image Uploads (ProtfolioImageUploads) */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Portfolio Images (`ProtfolioImageUploads`)
+            </label>
+            <Upload
+              accept="image/*"
+              multiple
+              beforeUpload={(file) => {
+                setPortfolioFiles(prev => [...prev, file]);
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const current = watch('portfolioUrls') || [];
+                  setValue('portfolioUrls', [...current, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+                return false;
+              }}
+              showUploadList={false}
+            >
+              <Button icon={<LuUpload size={14} />} size="small">
+                Attach Portfolio Images
+              </Button>
+            </Upload>
           </div>
+
+          {portfolioUrlsValue.length > 0 ? (
+            <div className="grid grid-cols-4 gap-3 mt-3">
+              {portfolioUrlsValue.map((url: string, index: number) => (
+                <div key={index} className="relative group border border-line rounded overflow-hidden p-1 bg-[rgba(0,0,0,0.02)]">
+                  <img src={url} alt={`Portfolio ${index + 1}`} className="w-full h-20 object-cover rounded" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updatedUrls = portfolioUrlsValue.filter((_, i) => i !== index);
+                      setValue('portfolioUrls', updatedUrls);
+                      setPortfolioFiles(prev => prev.filter((_, i) => i !== index));
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove Image"
+                  >
+                    <LuTrash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-4 border border-dashed border-line rounded text-mute text-xs">
+              <LuImage size={20} className="mx-auto mb-1 opacity-50" />
+              No portfolio images attached. Click "Attach Portfolio Images" to add work samples.
+            </div>
+          )}
         </div>
 
         {/* Action Form Footer */}
@@ -250,8 +618,9 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
             type="primary"
             htmlType="submit"
             size="large"
+            loading={loading}
           >
-            Save Provider
+            Save Provider Profile
           </Button>
         </div>
       </form>

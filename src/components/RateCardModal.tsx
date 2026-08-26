@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Input,
@@ -30,8 +30,9 @@ interface RateCardModalProps {
   categories: Category[];
   providers: Provider[];
   form: any; // unused now, kept for backward compatibility
+  loading?: boolean;
   onCancel: () => void;
-  onSave: (values: any) => void;
+  onSave: (formData: FormData, values: any) => void;
 }
 
 interface RateCardFormValues {
@@ -57,6 +58,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
   setRateCardSelectedCategory,
   categories,
   providers,
+  loading,
   onCancel,
   onSave,
 }) => {
@@ -64,6 +66,9 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
 
   const { data: rateCards = [] } = useGetRateCardsQuery();
   const editingRateCard = rateCards.find((rc) => rc.id === editingRateCardId);
+
+  const [imageFiles, setImageFiles] = useState<Record<number, File>>({});
+  const [videoFiles, setVideoFiles] = useState<Record<number, File>>({});
 
   const {
     control,
@@ -113,6 +118,8 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
 
   useEffect(() => {
     if (open) {
+      setImageFiles({});
+      setVideoFiles({});
       if (editingRateCard) {
         reset({
           name: editingRateCard.name,
@@ -149,18 +156,56 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
     }
   }, [open, editingRateCard, reset]);
 
+  const handleFormSubmit = (values: RateCardFormValues) => {
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("categoryId", values.categoryId);
+    formData.append("subcategoryId", values.subcategoryId);
+    formData.append("providerId", values.providerId);
+    if (values.price !== undefined && values.price !== null) formData.append("price", String(values.price));
+    if (values.strikePrice !== undefined && values.strikePrice !== null) formData.append("strikePrice", String(values.strikePrice));
+    formData.append("weight", String(values.weight));
+    formData.append("serviceType", values.serviceType);
+    formData.append("recommended", String(!!values.recommended));
+    formData.append("bestDeal", String(!!values.bestDeal));
+    formData.append("active", String(!!values.active));
+
+    (values.images || []).forEach((img, index) => {
+      if (imageFiles[index]) {
+        formData.append("images", imageFiles[index], imageFiles[index].name);
+      } else if (img) {
+        formData.append("images", img);
+      }
+    });
+
+    (values.videos || []).forEach((v, index) => {
+      if (videoFiles[index]) {
+        formData.append("videos", videoFiles[index], videoFiles[index].name);
+      } else if (v) {
+        formData.append("videos", v);
+      }
+    });
+
+    onSave(formData, values);
+  };
+
   return (
     <Modal
-      title={editingRateCardId ? "Edit Rate Card" : "Create Service Rate Card"}
+      title={
+        <div className="text-center w-full text-[1.2rem] font-semibold">
+          {editingRateCardId ? "Edit Rate Card" : "Create New Rate Card"}
+        </div>
+      }
       open={open}
       centered
       onCancel={onCancel}
       footer={null}
       width={720}
       destroyOnClose
+      className="premium-modal"
     >
       <form
-        onSubmit={handleSubmit(onSave)}
+        onSubmit={handleSubmit(handleFormSubmit)}
         className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-1"
       >
         <div className="mb-4">
@@ -459,6 +504,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                       <Upload
                         accept="image/*"
                         beforeUpload={(file) => {
+                          setImageFiles((prev) => ({ ...prev, [index]: file }));
                           const reader = new FileReader();
                           reader.onload = () => {
                             setValue(`images.${index}`, reader.result as string);
@@ -532,6 +578,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
                       <Upload
                         accept="video/*"
                         beforeUpload={(file) => {
+                          setVideoFiles((prev) => ({ ...prev, [index]: file }));
                           const reader = new FileReader();
                           reader.onload = () => {
                             setValue(`videos.${index}`, reader.result as string);
@@ -588,6 +635,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
             type="primary"
             htmlType="submit"
             size="large"
+            loading={loading}
           >
             Save Rate Card
           </Button>

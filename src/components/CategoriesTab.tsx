@@ -17,10 +17,13 @@ import { Table } from './common/Table';
 export const CategoriesTab: React.FC = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
 
-  const [addCategory] = useAddCategoryMutation();
-  const [addSubcategory] = useAddSubcategoryMutation();
-  const [updateCategory] = useUpdateCategoryMutation();
+  const [addCategory, { isLoading: isAddingCategory }] = useAddCategoryMutation();
+  const [addSubcategory, { isLoading: isAddingSubcategory }] = useAddSubcategoryMutation();
+  const [updateCategory, { isLoading: isUpdatingCategory }] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
+
+  const isSavingCategory = isAddingCategory || isUpdatingCategory;
+  const isSavingSubcategory = isAddingSubcategory || isUpdatingCategory;
 
   // Category Modal State (Add/Edit)
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -63,27 +66,16 @@ export const CategoriesTab: React.FC = () => {
     setShowCategoryModal(true);
   };
 
-  const handleSaveCategory = async (values: any) => {
+  const handleSaveCategory = async (formData: FormData, values?: any) => {
     try {
       if (editingCategoryId) {
         await updateCategory({
           id: editingCategoryId,
-          name: values.name,
-          description: values.description || undefined,
-          sortOrder: values.sortOrder,
-          isActive: values.isActive,
-          icon: values.icon || undefined,
-          videos: values.videos || []
+          body: formData
         }).unwrap();
         message.success('Category updated successfully.');
       } else {
-        await addCategory({
-          name: values.name,
-          description: values.description || undefined,
-          sortOrder: values.sortOrder,
-          icon: values.icon || undefined,
-          videos: values.videos || []
-        }).unwrap();
+        await addCategory(formData).unwrap();
         message.success('Category created successfully.');
       }
       setShowCategoryModal(false);
@@ -112,26 +104,19 @@ export const CategoriesTab: React.FC = () => {
     setShowSubcategoryModal(true);
   };
 
-  const handleSaveSubcategory = async (values: any) => {
+  const handleSaveSubcategory = async (formData: FormData, values?: any) => {
+    const parentId = values?.parentId || (formData.get('parentId') as string);
     try {
       if (editingSubcategoryId) {
         await updateCategory({
           id: editingSubcategoryId,
-          name: values.name,
-          description: values.description || undefined,
-          sortOrder: values.sortOrder,
-          isActive: values.isActive,
-          parentId: values.parentId || null,
-          videos: values.videos || []
+          body: formData
         }).unwrap();
         message.success('Subcategory updated successfully.');
       } else {
         await addSubcategory({
-          parentId: values.parentId,
-          name: values.name,
-          description: values.description || undefined,
-          sortOrder: values.sortOrder,
-          videos: values.videos || []
+          parentId,
+          body: formData
         }).unwrap();
         message.success('Subcategory created successfully.');
       }
@@ -325,6 +310,7 @@ export const CategoriesTab: React.FC = () => {
         open={showCategoryModal}
         editingCategoryId={editingCategoryId}
         form={categoryFormRef}
+        loading={isSavingCategory}
         onCancel={() => setShowCategoryModal(false)}
         onSave={handleSaveCategory}
       />
@@ -334,6 +320,7 @@ export const CategoriesTab: React.FC = () => {
         editingSubcategoryId={editingSubcategoryId}
         categories={categories}
         form={subcategoryFormRef}
+        loading={isSavingSubcategory}
         onCancel={() => setShowSubcategoryModal(false)}
         onSave={handleSaveSubcategory}
       />

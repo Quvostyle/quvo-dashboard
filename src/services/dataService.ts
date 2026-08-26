@@ -21,10 +21,17 @@ export interface Provider {
   full_name: string;
   email: string;
   mobile: string;
-  gender: 'male' | 'female' | 'other';
-  birth_date: string;
+  gender: string;
+  birth_date?: string;
   address: string;
+  experience?: string | number;
+  specialties?: string[] | string;
+  subcategories?: string[] | string;
   isActive: boolean;
+  startingFrom?: string | number;
+  bioDetails?: string;
+  profilePic: string;
+  ProtfolioImageUploads?: string[] | any;
 }
 
 export interface RateCard {
