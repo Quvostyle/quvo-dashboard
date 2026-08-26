@@ -37,6 +37,7 @@ export interface Provider {
 export interface RateCard {
   id: string;
   name: string;
+  description?: string;
   categoryId: string;
   subcategoryId: string;
   providerId: string;

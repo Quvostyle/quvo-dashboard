@@ -42,6 +42,7 @@ export const RateCardsTab: React.FC = () => {
     setRateCardSelectedCategory(rc.categoryId);
     rateCardForm.setFieldsValue({
       name: rc.name,
+      description: rc.description || '',
       categoryId: rc.categoryId,
       subcategoryId: rc.subcategoryId,
       providerId: rc.providerId,
@@ -105,6 +106,11 @@ export const RateCardsTab: React.FC = () => {
             )}
             <div>
               <div className="font-semibold text-[0.95rem] text-ink">{record.name}</div>
+              {record.description && (
+                <div className="text-[0.8rem] text-mute mt-0.5 line-clamp-2 max-w-[280px]">
+                  {record.description}
+                </div>
+              )}
               <div className="text-[0.8rem] text-mute mt-0.5">
                 Type: <span className="font-semibold uppercase">{record.serviceType}</span>
               </div>
