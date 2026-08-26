@@ -65,7 +65,6 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
       }
     });
 
-    // Default fallback options if categories array is empty
     if (subs.length === 0) {
       ['Hair Care', 'Skin Care', 'Styling', 'Beard & Grooming', 'Bridal & Makeup'].forEach(s => {
         subs.push({ label: s, value: s });
