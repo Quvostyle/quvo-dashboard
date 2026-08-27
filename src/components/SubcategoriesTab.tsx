@@ -12,7 +12,8 @@ import { SubcategoryModal } from './SubcategoryModal';
 import { Table } from './common/Table';
 
 export const SubcategoriesTab: React.FC = () => {
-  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery(searchQuery);
 
   const [addSubcategory, { isLoading: isAddingSubcat }] = useAddSubcategoryMutation();
   const [updateCategory, { isLoading: isUpdatingCat }] = useUpdateCategoryMutation();
@@ -243,6 +244,7 @@ export const SubcategoriesTab: React.FC = () => {
         columns={columns}
         data={subcategories}
         pageSize={20}
+        onSearch={setSearchQuery}
       />
 
       <SubcategoryModal

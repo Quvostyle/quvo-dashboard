@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Tag, Skeleton } from 'antd';
 import { LuFileText } from 'react-icons/lu';
 import type { IntakeRequest } from '../services/dataService';
@@ -12,7 +12,8 @@ interface OrdersTabProps {
 export const OrdersTab: React.FC<OrdersTabProps> = ({
   onManageRequest
 }) => {
-  const { data: orders = [], isLoading: ordersLoading } = useGetOrdersQuery();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data: orders = [], isLoading: ordersLoading } = useGetOrdersQuery(searchQuery);
   const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery();
 
   const isDataLoading = ordersLoading || providersLoading;
@@ -139,6 +140,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         columns={columns}
         data={orders}
         pageSize={20}
+        onSearch={setSearchQuery}
       />
     </div>
   );
