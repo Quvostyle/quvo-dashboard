@@ -15,7 +15,8 @@ import { FormStepBuilderModal } from './FormStepBuilderModal';
 import { Table } from './common/Table';
 
 export const CategoriesTab: React.FC = () => {
-  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery(searchQuery);
 
   const [addCategory, { isLoading: isAddingCategory }] = useAddCategoryMutation();
   const [addSubcategory, { isLoading: isAddingSubcategory }] = useAddSubcategoryMutation();
@@ -304,6 +305,7 @@ export const CategoriesTab: React.FC = () => {
         data={categories}
         pageSize={20}
         expandable={true}
+        onSearch={setSearchQuery}
       />
 
       <CategoryModal

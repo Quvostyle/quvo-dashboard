@@ -13,8 +13,8 @@ const unwrapArray = (response: any, key: string) => {
 export const apiSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     // Categories
-    getCategories: builder.query<Category[], void>({
-      query: () => '/admin/categories',
+    getCategories: builder.query<Category[], string | void>({
+      query: (search) => search ? `/admin/categories?search=${encodeURIComponent(search)}` : '/admin/categories',
       transformResponse: (res) => unwrapArray(res, 'categories'),
       providesTags: ['Category']
     }),
@@ -81,8 +81,8 @@ export const apiSlice = api.injectEndpoints({
     }),
 
     // Providers
-    getProviders: builder.query<Provider[], void>({
-      query: () => '/admin/providers',
+    getProviders: builder.query<Provider[], string | void>({
+      query: (search) => search ? `/admin/providers?search=${encodeURIComponent(search)}` : '/admin/providers',
       transformResponse: (res) => unwrapArray(res, 'providers'),
       providesTags: ['Provider']
     }),
@@ -114,8 +114,17 @@ export const apiSlice = api.injectEndpoints({
     }),
 
     // Rate Cards
-    getRateCards: builder.query<RateCard[], string | void>({
-      query: (providerId) => providerId ? `/rate-cards?providerId=${providerId}` : '/rate-cards',
+    getRateCards: builder.query<RateCard[], { providerId?: string; search?: string } | string | void>({
+      query: (args) => {
+        if (typeof args === 'string') return args ? `/rate-cards?search=${encodeURIComponent(args)}` : '/rate-cards';
+        if (args?.providerId || args?.search) {
+          const params = new URLSearchParams();
+          if (args.providerId) params.append('providerId', args.providerId);
+          if (args.search) params.append('search', args.search);
+          return `/rate-cards?${params.toString()}`;
+        }
+        return '/rate-cards';
+      },
       transformResponse: (res) => unwrapArray(res, 'rateCards'),
       providesTags: ['RateCard']
     }),
@@ -147,8 +156,8 @@ export const apiSlice = api.injectEndpoints({
     }),
 
     // Orders & Intakes
-    getOrders: builder.query<IntakeRequest[], void>({
-      query: () => '/orders',
+    getOrders: builder.query<IntakeRequest[], string | void>({
+      query: (search) => search ? `/orders?search=${encodeURIComponent(search)}` : '/orders',
       transformResponse: (res) => unwrapArray(res, 'orders'),
       providesTags: ['Order']
     }),

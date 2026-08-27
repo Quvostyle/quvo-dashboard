@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTable, useSortBy, usePagination, useExpanded, useGlobalFilter } from "react-table";
 import { Button, Select, Input } from "antd";
 import {
@@ -17,6 +17,7 @@ interface TableProps {
   pageSize?: number;
   isPaginated?: boolean;
   expandable?: boolean;
+  onSearch?: (searchQuery: string) => void;
 }
 
 export const Table: React.FC<TableProps> = ({
@@ -25,9 +26,35 @@ export const Table: React.FC<TableProps> = ({
   pageSize = 20,
   isPaginated = true,
   expandable = false,
+  onSearch
 }) => {
   const columns = useMemo(() => initialColumns, [initialColumns]);
   const data = useMemo(() => initialData, [initialData]);
+
+  // Universal recursive search filter that inspects all object fields
+  const universalGlobalFilter = useMemo(() => {
+    return (rows: any[], _columnIds: any[], filterValue: string) => {
+      if (!filterValue || !filterValue.trim()) return rows;
+      const searchTerm = filterValue.trim().toLowerCase();
+
+      const searchInValue = (val: any): boolean => {
+        if (val === null || val === undefined) return false;
+        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
+          return String(val).toLowerCase().includes(searchTerm);
+        }
+        if (Array.isArray(val)) {
+          return val.some((item) => searchInValue(item));
+        }
+        if (typeof val === 'object') {
+          if (val.$$typeof || val._reactInternalInstance) return false;
+          return Object.values(val).some((item) => searchInValue(item));
+        }
+        return false;
+      };
+
+      return rows.filter((row) => searchInValue(row.original));
+    };
+  }, []);
 
   // Hook config builder - useExpanded must be before usePagination
   const hooks: any[] = [useGlobalFilter, useSortBy];
@@ -55,16 +82,34 @@ export const Table: React.FC<TableProps> = ({
     previousPage,
     setPageSize,
     setGlobalFilter,
-    state: { pageIndex, pageSize: statePageSize, globalFilter },
+    state: { pageIndex, pageSize: statePageSize },
   } = useTable(
     {
       columns,
       data,
+      globalFilter: universalGlobalFilter,
       initialState: { pageSize },
       getSubRows: (row: any) => row.children || row.subRows || [],
     } as any,
     ...hooks,
   ) as any;
+
+  // Local search input value state for instantaneous feedback
+  const [searchValue, setSearchValue] = useState<string>('');
+
+  // Debounced search handler for client filter and API callback
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setGlobalFilter(searchValue || undefined);
+      if (onSearch) {
+        onSearch(searchValue);
+      }
+    }, 350);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchValue, setGlobalFilter, onSearch]);
 
   // Use either paginated rows (page) or all rows
   const displayRows = isPaginated ? page : rows;
@@ -80,8 +125,8 @@ export const Table: React.FC<TableProps> = ({
             <strong className="text-sm font-semibold text-gray-700">Search:</strong>
             <Input
               placeholder="Search records..."
-              value={globalFilter || ""}
-              onChange={(e) => setGlobalFilter(e.target.value || undefined)}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               className="w-full md:w-[260px] h-9 rounded-md"
               prefix={<LuSearch size={15} className="text-mute" />}
               allowClear

@@ -12,7 +12,8 @@ import { ProviderModal } from './ProviderModal';
 import { Table } from './common/Table';
 
 export const ProvidersTab: React.FC = () => {
-  const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery(searchQuery);
 
   const [addProvider, { isLoading: isAddingProvider }] = useAddProviderMutation();
   const [updateProvider, { isLoading: isUpdatingProvider }] = useUpdateProviderMutation();
@@ -293,6 +294,7 @@ export const ProvidersTab: React.FC = () => {
         columns={columns}
         data={providers}
         pageSize={20}
+        onSearch={setSearchQuery}
       />
 
       <ProviderModal

@@ -58,6 +58,23 @@ interface LocalStep {
   questions: LocalQuestion[];
 }
 
+export const isChoiceType = (type?: string | null): boolean => {
+  if (!type) return false;
+  const t = type.toLowerCase();
+  return ['radio', 'checkbox', 'select', 'dropdown', 'single_choice', 'multi_choice'].includes(t);
+};
+
+export const normalizeInputType = (type?: string | null): string => {
+  if (!type) return 'radio';
+  const lower = type.toLowerCase();
+  if (lower === 'single_choice') return 'radio';
+  if (lower === 'multi_choice') return 'checkbox';
+  if (lower === 'text_input') return 'text';
+  if (lower === 'dropdown') return 'select';
+  if (lower === 'date_picker') return 'date';
+  return lower;
+};
+
 export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
   open,
   subCategoryId,
@@ -91,7 +108,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
                   id: q.id || q.question_id,
                   fieldKey: q.fieldKey || q.field_key || '',
                   label: q.label || '',
-                  inputType: q.inputType || q.input_type || 'SINGLE_CHOICE',
+                  inputType: normalizeInputType(q.inputType || q.input_type || 'radio'),
                   isRequired: q.isRequired ?? q.is_required ?? false,
                   orderIndex: q.orderIndex ?? 0,
                   options: q.options
@@ -179,7 +196,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
     const newQuestion: LocalQuestion = {
       fieldKey: '',
       label: '',
-      inputType: 'SINGLE_CHOICE',
+      inputType: 'radio',
       isRequired: false,
       orderIndex: nextIdx,
       options: []
@@ -236,7 +253,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
       [field]: value
     };
     // Initialize options list if changing type to choices and it was empty
-    if (field === 'inputType' && (value === 'SINGLE_CHOICE' || value === 'MULTI_CHOICE' || value === 'DROPDOWN')) {
+    if (field === 'inputType' && isChoiceType(value)) {
       if (!questions[qIdx].options || questions[qIdx].options.length === 0) {
         questions[qIdx].options = [
           { label: '', value: '', orderIndex: 0 }
@@ -358,8 +375,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
           return;
         }
 
-        const choiceTypes = ['SINGLE_CHOICE', 'MULTI_CHOICE', 'DROPDOWN'];
-        if (choiceTypes.includes(question.inputType)) {
+        if (isChoiceType(question.inputType)) {
           if (!question.options || question.options.length === 0) {
             message.error(`Question '${question.label}' has choices input type but no options configured.`);
             return;
@@ -409,7 +425,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
   return (
     <Modal
       title={
-        <div className="flex flex-col gap-0.5 border-b border-line pb-3 -mx-[8px] px-[8px] bg-[rgba(184,148,106,0.02)]">
+        <div className="flex flex-col gap-0.5 border-b border-line pb-3 -mx-[4px] px-[4px] bg-[rgba(184,148,106,0.02)]">
           <span className="label-overline text-mute text-[10px]">Taxonomy Form Curation</span>
           <h3 className="font-serif text-lg text-ink font-semibold !m-0">
             Form Steps Builder: <span className="text-gold font-sans">{subCategoryName}</span>
@@ -420,7 +436,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
       centered
       onCancel={onCancel}
       footer={
-        <div className="flex justify-between border-t border-line pt-4 -mx-[8px] px-[8px] mt-6">
+        <div className="flex justify-between border-t border-line pt-3 -mx-[4px] px-[4px] mt-2">
           <Button onClick={onCancel} disabled={isSaving} size="large">
             Cancel
           </Button>
@@ -435,12 +451,26 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
           </Button>
         </div>
       }
-      width={900}
+      width={1050}
       destroyOnClose
-      styles={{ body: { padding: '24px 0 0 0', maxHeight: '70vh', overflowY: 'auto' } }}
+      styles={{
+        header: {
+          marginBottom: '8px',
+          flexShrink: 0
+        },
+        body: {
+          maxHeight: 'calc(85vh - 130px)',
+          overflowY: 'auto',
+          padding: '12px 4px 12px 0'
+        },
+        footer: {
+          marginTop: '8px',
+          flexShrink: 0
+        }
+      }}
       className="premium-modal font-sans"
     >
-      <div className="px-6 pb-2">
+      <div className="px-2 pb-2">
         {isLoading ? (
           <div className="py-24 text-center">
             <Spin size="large" tip="Loading Subcategory Curation Fields..." />
@@ -471,7 +501,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-[calc(85vh-230px)] overflow-y-auto pr-1">
                   {steps.map((step, idx) => {
                     const isExpanded = expandedStepIndex === idx;
                     return (
@@ -661,17 +691,18 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 mb-1">Input Field Type</label>
                                 <Select
-                                  value={question.inputType}
+                                  value={normalizeInputType(question.inputType)}
                                   onChange={(val) => handleUpdateQuestionField(expandedStepIndex, qIdx, 'inputType', val)}
                                   className="w-full"
                                   size="small"
                                 >
-                                  <Select.Option value="SINGLE_CHOICE">Single Choice (Radio Buttons)</Select.Option>
-                                  <Select.Option value="MULTI_CHOICE">Multi Choice (Checkboxes)</Select.Option>
-                                  <Select.Option value="TEXT_INPUT">Text Input Line</Select.Option>
-                                  <Select.Option value="TEXTAREA">TextArea Box</Select.Option>
-                                  <Select.Option value="DROPDOWN">Select Dropdown</Select.Option>
-                                  <Select.Option value="DATE_PICKER">Date Picker</Select.Option>
+                                  <Select.Option value="radio">Single Choice (Radio Buttons)</Select.Option>
+                                  <Select.Option value="checkbox">Multi Choice (Checkboxes)</Select.Option>
+                                  <Select.Option value="select">Select Dropdown</Select.Option>
+                                  <Select.Option value="text">Text Input Line</Select.Option>
+                                  <Select.Option value="textarea">TextArea Box</Select.Option>
+                                  <Select.Option value="file">File Upload</Select.Option>
+                                  <Select.Option value="date">Date Picker</Select.Option>
                                 </Select>
                               </div>
 
@@ -686,7 +717,7 @@ export const FormStepBuilderModal: React.FC<FormStepBuilderModalProps> = ({
                             </div>
 
                             {/* Option selections editor */}
-                            {['SINGLE_CHOICE', 'MULTI_CHOICE', 'DROPDOWN'].includes(question.inputType) && (
+                            {isChoiceType(question.inputType) && (
                               <div className="mt-4 pt-3 border-t border-line">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="text-[10px] font-bold text-cocoa uppercase tracking-wider">Configure Options</span>

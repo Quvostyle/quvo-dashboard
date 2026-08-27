@@ -14,7 +14,8 @@ import { RateCardModal } from './RateCardModal';
 import { Table } from './common/Table';
 
 export const RateCardsTab: React.FC = () => {
-  const { data: rateCards = [], isLoading: rateCardsLoading } = useGetRateCardsQuery();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data: rateCards = [], isLoading: rateCardsLoading } = useGetRateCardsQuery({ search: searchQuery });
   const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
   const { data: providers = [], isLoading: providersLoading } = useGetProvidersQuery();
 
@@ -242,6 +243,7 @@ export const RateCardsTab: React.FC = () => {
         columns={columns}
         data={rateCards}
         pageSize={20}
+        onSearch={setSearchQuery}
       />
 
       <RateCardModal
