@@ -18,7 +18,8 @@ import {
   LuCreditCard,
   LuMail,
   LuLock,
-  LuMenu
+  LuMenu,
+  LuClock
 } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
@@ -31,6 +32,7 @@ import { OrdersTab } from './components/OrdersTab';
 import { CategoriesTab } from './components/CategoriesTab';
 import { ProvidersTab } from './components/ProvidersTab';
 import { RateCardsTab } from './components/RateCardsTab';
+import { ProviderSlotsTab } from './components/ProviderSlotsTab';
 
 // Shared details modal
 import { OrderDetailsModal } from './components/OrderDetailsModal';
@@ -43,7 +45,8 @@ const tabTitles: Record<string, string> = {
   orders: 'Intake Queue',
   categories: 'Taxonomy System',
   providers: 'Stylist Partners',
-  ratecards: 'Service Rates'
+  ratecards: 'Service Rates',
+  slots: 'Provider Availability & Slots'
 };
 
 const DashboardRoutes: React.FC<{
@@ -85,7 +88,7 @@ const DashboardRoutes: React.FC<{
 
     const sidebarContent = (
       <div className="flex flex-col h-full">
-        <div className={`sidebar-logo h-[70px] flex items-center border-b border-line box-border ${collapsed && !isMobile ? 'justify-center p-0' : 'justify-between px-5'}`}>
+        <div className={`sidebar-logo h-[54px] flex items-center border-b border-line box-border ${collapsed && !isMobile ? 'justify-center p-0' : 'justify-between px-4'}`}>
           {(collapsed && !isMobile) ? (
             <Button
               type="text"
@@ -126,7 +129,8 @@ const DashboardRoutes: React.FC<{
             { key: 'orders', icon: <LuShoppingBag size={18} />, label: `Orders (${pendingOrdersCount} pend)` },
             { key: 'categories', icon: <LuFolder size={18} />, label: 'Categories' },
             { key: 'providers', icon: <LuUser size={18} />, label: 'Providers' },
-            { key: 'ratecards', icon: <LuCreditCard size={18} />, label: 'Rate Cards' }
+            { key: 'ratecards', icon: <LuCreditCard size={18} />, label: 'Rate Cards' },
+            { key: 'slots', icon: <LuClock size={18} />, label: 'Provider Slots' }
           ]}
         />
 
@@ -160,10 +164,10 @@ const DashboardRoutes: React.FC<{
           </Drawer>
         ) : (
           <Sider
-            width={260}
+            width={230}
             collapsed={collapsed}
             onCollapse={(val) => setCollapsed(val)}
-            collapsedWidth={80}
+            collapsedWidth={70}
             trigger={null}
             className="dashboard-sidebar"
           >
@@ -174,7 +178,7 @@ const DashboardRoutes: React.FC<{
         {/* RIGHT SIDE: HEADER + CONTENT */}
         <Layout className="bg-transparent">
           <Header
-            className={`!bg-bone !border-b !border-line flex items-center justify-between !h-[70px] !shadow-[0_1px_3px_rgba(0,0,0,0.02)] ${isMobile ? '!px-4' : '!px-10'}`}
+            className={`!bg-bone !border-b !border-line flex items-center justify-between !h-[54px] !shadow-[0_1px_3px_rgba(0,0,0,0.02)] ${isMobile ? '!px-3' : '!px-6'}`}
           >
             <div className="flex items-center gap-3">
               {isMobile && (
@@ -214,6 +218,7 @@ const DashboardRoutes: React.FC<{
               <Route path="/categories" element={<CategoriesTab />} />
               <Route path="/providers" element={<ProvidersTab />} />
               <Route path="/ratecards" element={<RateCardsTab />} />
+              <Route path="/slots" element={<ProviderSlotsTab />} />
               <Route path="*" element={<Navigate to="/overview" replace />} />
             </Routes>
           </Content>

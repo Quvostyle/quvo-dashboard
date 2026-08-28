@@ -42,7 +42,7 @@ export const RateCardsTab: React.FC = () => {
     setEditingRateCardId(rc.id);
     setRateCardSelectedCategory(rc.categoryId);
     rateCardForm.setFieldsValue({
-      name: rc.name,
+      name: rc.name || '',
       description: rc.description || '',
       categoryId: rc.categoryId,
       subcategoryId: rc.subcategoryId,
@@ -99,14 +99,14 @@ export const RateCardsTab: React.FC = () => {
         return (
           <div className="flex items-center gap-3">
             {mainImage ? (
-              <img src={mainImage} alt={record.name} className="w-20 h-20 object-cover rounded-md border border-line" />
+              <img src={mainImage} alt={record.name || 'Service'} className="w-20 h-20 object-cover rounded-md border border-line" />
             ) : (
               <div className="w-12 h-12 bg-[#fafafa] rounded-md flex items-center justify-center border border-line">
                 <LuImage size={20} className="text-[#ccc]" />
               </div>
             )}
             <div>
-              <div className="font-semibold text-[0.95rem] text-ink">{record.name}</div>
+              <div className="font-semibold text-[0.95rem] text-ink">{record.name || 'Untitled Service'}</div>
               {record.description && (
                 <div className="text-[0.8rem] text-mute mt-0.5 line-clamp-2 max-w-[280px]">
                   {record.description}
@@ -186,11 +186,11 @@ export const RateCardsTab: React.FC = () => {
               onClick={() => {
                 Modal.confirm({
                   title: 'Delete Rate Card',
-                  content: `Are you sure you want to delete rate card '${record.name}'?`,
+                  content: `Are you sure you want to delete rate card '${record.name || 'Untitled Service'}'?`,
                   okText: 'Yes, Delete',
                   okType: 'danger',
                   cancelText: 'No',
-                  onOk: () => handleDeleteRateCard(record.id, record.name),
+                  onOk: () => handleDeleteRateCard(record.id, record.name || 'Untitled Service'),
                 });
               }}
             />
@@ -228,10 +228,10 @@ export const RateCardsTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3.5">
         <div>
           <p className="label-overline">Rate Cards</p>
-          <h2 className="text-3xl font-bold mt-1">Service Rate Management</h2>
+          <h2 className="text-2xl font-bold mt-0.5">Service Rate Management</h2>
         </div>
         <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddRateCard} className="w-full sm:w-auto">
           Create Rate Card

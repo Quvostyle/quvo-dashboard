@@ -274,10 +274,10 @@ export const ProvidersTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3.5">
         <div>
           <p className="label-overline">Providers Directory</p>
-          <h2 className="text-3xl font-bold mt-1">Admin Service Providers</h2>
+          <h2 className="text-2xl font-bold mt-0.5">Admin Service Providers</h2>
         </div>
         <Button
           type="primary"

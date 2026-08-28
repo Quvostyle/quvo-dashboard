@@ -92,64 +92,64 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   return (
     <div className="animate-fade-up pb-8">
       {/* KPI Cards Grid */}
-      <Row gutter={[24, 24]} className="mb-8">
+      <Row gutter={[16, 16]} className="mb-4">
         <Col xs={24} sm={12} lg={6}>
-          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-3.5 rounded-xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div>
-              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Total Orders</p>
-              <h3 className="text-3xl font-serif text-ink font-normal !m-0">{totalOrders}</h3>
-              <p className="text-[0.68rem] text-emerald-600 mt-1 font-medium">Updated just now</p>
+              <p className="text-[0.65rem] text-mute uppercase tracking-widest font-semibold mb-0.5">Total Orders</p>
+              <h3 className="text-2xl font-serif text-ink font-normal !m-0">{totalOrders}</h3>
+              <p className="text-[0.65rem] text-emerald-600 mt-0.5 font-medium">Updated just now</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
-              <LuShoppingBag size={22} />
+            <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <LuShoppingBag size={18} />
             </div>
           </div>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-3.5 rounded-xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div>
-              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Pending Review</p>
-              <h3 className={`text-3xl font-serif font-normal !m-0 ${pendingOrders > 0 ? 'text-wine' : 'text-ink'}`}>{pendingOrders}</h3>
-              <p className={`text-[0.68rem] mt-1 font-medium ${pendingOrders > 0 ? 'text-wine animate-pulse' : 'text-mute'}`}>
+              <p className="text-[0.65rem] text-mute uppercase tracking-widest font-semibold mb-0.5">Pending Review</p>
+              <h3 className={`text-2xl font-serif font-normal !m-0 ${pendingOrders > 0 ? 'text-wine' : 'text-ink'}`}>{pendingOrders}</h3>
+              <p className={`text-[0.65rem] mt-0.5 font-medium ${pendingOrders > 0 ? 'text-wine animate-pulse' : 'text-mute'}`}>
                 {pendingOrders > 0 ? 'Requires attention' : 'All clear'}
               </p>
             </div>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${pendingOrders > 0 ? 'bg-wine/10 text-wine' : 'bg-gold/10 text-gold'}`}>
-              <LuInfo size={22} />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${pendingOrders > 0 ? 'bg-wine/10 text-wine' : 'bg-gold/10 text-gold'}`}>
+              <LuInfo size={18} />
             </div>
           </div>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-3.5 rounded-xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div>
-              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Stylist Partners</p>
-              <h3 className="text-3xl font-serif text-ink font-normal !m-0">{totalProviders}</h3>
-              <p className="text-[0.68rem] text-[#4A5D3F] mt-1 font-medium">On duty active</p>
+              <p className="text-[0.65rem] text-mute uppercase tracking-widest font-semibold mb-0.5">Stylist Partners</p>
+              <h3 className="text-2xl font-serif text-ink font-normal !m-0">{totalProviders}</h3>
+              <p className="text-[0.65rem] text-[#4A5D3F] mt-0.5 font-medium">On duty active</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
-              <LuUser size={22} />
+            <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <LuUser size={18} />
             </div>
           </div>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_rgba(58,46,36,0.08)] flex items-center justify-between">
+          <div className="bg-[#FFFDF9] border border-[#B8946A]/20 p-3.5 rounded-xl shadow-[0_4px_20px_-4px_rgba(58,46,36,0.03)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div>
-              <p className="text-[0.68rem] text-mute uppercase tracking-widest font-semibold mb-1">Active Categories</p>
-              <h3 className="text-3xl font-serif text-ink font-normal !m-0">{activeCategoriesCount} <span className="text-lg text-mute">/ {categories.length}</span></h3>
-              <p className="text-[0.68rem] text-mute mt-1 font-medium">Service catalog layers</p>
+              <p className="text-[0.65rem] text-mute uppercase tracking-widest font-semibold mb-0.5">Active Categories</p>
+              <h3 className="text-2xl font-serif text-ink font-normal !m-0">{activeCategoriesCount} <span className="text-base text-mute">/ {categories.length}</span></h3>
+              <p className="text-[0.65rem] text-mute mt-0.5 font-medium">Service catalog layers</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
-              <LuFolder size={22} />
+            <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <LuFolder size={18} />
             </div>
           </div>
         </Col>
       </Row>
 
       {/* Activity and Charts Row */}
-      <Row gutter={[32, 32]}>
+      <Row gutter={[16, 16]}>
         {/* Recent Orders List */}
         <Col xs={24} lg={15}>
           <Card

@@ -131,9 +131,9 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
   return (
     <div className="animate-fade-up">
-      <div className="mb-8">
+      <div className="mb-3.5">
         <p className="label-overline">Queue Intake</p>
-        <h2 className="text-[2.5rem] mt-1">Styling Requests Queue</h2>
+        <h2 className="text-2xl font-bold mt-0.5">Styling Requests Queue</h2>
       </div>
 
       <Table

@@ -117,18 +117,18 @@ export const Table: React.FC<TableProps> = ({
   return (
     <div className="w-full">
       {/* Top Header: Search & Pagination */}
-      <CardLayout className="p-4 rounded-xl mb-4">
+      <CardLayout className="p-3 rounded-lg mb-3">
 
-        <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center md:justify-between">
+        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center md:justify-between">
           {/* Search Input (Left) */}
           <div className="flex items-center space-x-2 w-full md:w-auto">
-            <strong className="text-sm font-semibold text-gray-700">Search:</strong>
+            <strong className="text-xs font-semibold text-gray-700">Search:</strong>
             <Input
               placeholder="Search records..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full md:w-[260px] h-9 rounded-md"
-              prefix={<LuSearch size={15} className="text-mute" />}
+              className="w-full md:w-[240px] h-8 rounded-md text-xs"
+              prefix={<LuSearch size={14} className="text-mute" />}
               allowClear
             />
           </div>
