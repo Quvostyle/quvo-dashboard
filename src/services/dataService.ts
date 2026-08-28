@@ -36,13 +36,13 @@ export interface Provider {
 
 export interface RateCard {
   id: string;
-  name: string;
+  name?: string;
   description?: string;
   categoryId: string;
   subcategoryId: string;
   providerId: string;
   price: number;
-  strikePrice: number;
+  strikePrice?: number;
   weight: number;
   recommended: boolean;
   bestDeal: boolean;
@@ -50,6 +50,46 @@ export interface RateCard {
   serviceType: 'b2c' | 'b2b';
   images?: string[];
   videos?: string[];
+}
+
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+export interface WeeklyScheduleDay {
+  day_of_week: DayOfWeek;
+  start_time: string;
+  end_time: string;
+  slot_duration_mins: number;
+  buffer_time_mins: number;
+  is_active: boolean;
+}
+
+export interface UnavailabilityRecord {
+  id: string;
+  provider_id: string;
+  date: string;
+  is_full_day: boolean;
+  start_time?: string;
+  end_time?: string;
+  reason?: string;
+  created_at: string;
+}
+
+export interface SlotOverrideRecord {
+  id: string;
+  provider_id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  type: 'BLOCKED' | 'FORCE_AVAILABLE';
+  note?: string;
+  created_at: string;
+}
+
+export interface ComputedSlot {
+  start_time: string;
+  end_time: string;
+  status: 'AVAILABLE' | 'BOOKED' | 'BLOCKED' | 'UNAVAILABLE';
+  note?: string;
 }
 
 export interface LookbookItem {
@@ -110,7 +150,39 @@ function toSlug(text: string): string {
     .replace(/-+/g, '-');            // collapse multiple hyphens
 }
 
+function timeToMins(t: string): number {
+  if (!t || !t.includes(':')) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
 
+function minsToTime(m: number): string {
+  const hh = String(Math.floor(m / 60)).padStart(2, '0');
+  const mm = String(m % 60).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+function getDayOfWeekName(dateStr: string): DayOfWeek {
+  const d = new Date(dateStr + 'T00:00:00');
+  const days: DayOfWeek[] = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  return days[d.getDay()];
+}
+
+function overlaps(start1: number, end1: number, start2: number, end2: number): boolean {
+  return start1 < end2 && end1 > start2;
+}
+
+function getDefaultWeeklySchedule(): WeeklyScheduleDay[] {
+  return [
+    { day_of_week: 'MONDAY', start_time: '09:00', end_time: '18:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: true },
+    { day_of_week: 'TUESDAY', start_time: '09:00', end_time: '18:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: true },
+    { day_of_week: 'WEDNESDAY', start_time: '09:00', end_time: '18:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: true },
+    { day_of_week: 'THURSDAY', start_time: '09:00', end_time: '18:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: true },
+    { day_of_week: 'FRIDAY', start_time: '09:00', end_time: '18:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: true },
+    { day_of_week: 'SATURDAY', start_time: '10:00', end_time: '16:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: true },
+    { day_of_week: 'SUNDAY', start_time: '09:00', end_time: '18:00', slot_duration_mins: 60, buffer_time_mins: 15, is_active: false },
+  ];
+}
 
 // Initialize localStorage if keys do not exist
 export function initializeDB() {
@@ -121,6 +193,9 @@ export function initializeDB() {
     localStorage.removeItem('quvo_rate_cards');
     localStorage.removeItem('quvo_orders');
     localStorage.removeItem('quvo_lookbooks');
+    localStorage.removeItem('quvo_provider_schedules');
+    localStorage.removeItem('quvo_provider_unavailability');
+    localStorage.removeItem('quvo_provider_slot_overrides');
     localStorage.setItem(versionKey, 'true');
   }
 
@@ -142,6 +217,18 @@ export function initializeDB() {
 
   if (!localStorage.getItem('quvo_lookbooks')) {
     localStorage.setItem('quvo_lookbooks', JSON.stringify([]));
+  }
+
+  if (!localStorage.getItem('quvo_provider_schedules')) {
+    localStorage.setItem('quvo_provider_schedules', JSON.stringify({}));
+  }
+
+  if (!localStorage.getItem('quvo_provider_unavailability')) {
+    localStorage.setItem('quvo_provider_unavailability', JSON.stringify([]));
+  }
+
+  if (!localStorage.getItem('quvo_provider_slot_overrides')) {
+    localStorage.setItem('quvo_provider_slot_overrides', JSON.stringify([]));
   }
 }
 
@@ -436,5 +523,181 @@ export const dataService = {
 
     lb.items = lb.items.filter(item => item.id !== itemId);
     return this.saveLookbook(lb);
+  },
+
+  // --- Provider Availability & Slots ---
+  getWeeklySchedule(providerId: string): WeeklyScheduleDay[] {
+    initializeDB();
+    const raw = localStorage.getItem('quvo_provider_schedules');
+    const schedulesMap: Record<string, WeeklyScheduleDay[]> = raw ? JSON.parse(raw) : {};
+    if (schedulesMap[providerId]) {
+      return schedulesMap[providerId];
+    }
+    return getDefaultWeeklySchedule();
+  },
+
+  saveWeeklySchedule(providerId: string, schedules: WeeklyScheduleDay[]): WeeklyScheduleDay[] {
+    initializeDB();
+    const raw = localStorage.getItem('quvo_provider_schedules');
+    const schedulesMap: Record<string, WeeklyScheduleDay[]> = raw ? JSON.parse(raw) : {};
+    schedulesMap[providerId] = schedules;
+    localStorage.setItem('quvo_provider_schedules', JSON.stringify(schedulesMap));
+    return schedules;
+  },
+
+  getUnavailabilities(providerId: string, from?: string, to?: string): UnavailabilityRecord[] {
+    const list = getStoredItems<UnavailabilityRecord>('quvo_provider_unavailability');
+    return list.filter(u => {
+      if (u.provider_id !== providerId) return false;
+      if (from && u.date < from) return false;
+      if (to && u.date > to) return false;
+      return true;
+    });
+  },
+
+  addUnavailability(providerId: string, unavail: Omit<UnavailabilityRecord, 'id' | 'provider_id' | 'created_at'>): UnavailabilityRecord {
+    const list = getStoredItems<UnavailabilityRecord>('quvo_provider_unavailability');
+    const newRecord: UnavailabilityRecord = {
+      ...unavail,
+      id: generateUUID(),
+      provider_id: providerId,
+      created_at: new Date().toISOString()
+    };
+    list.push(newRecord);
+    setStoredItems('quvo_provider_unavailability', list);
+    return newRecord;
+  },
+
+  deleteUnavailability(providerId: string, id: string): void {
+    const list = getStoredItems<UnavailabilityRecord>('quvo_provider_unavailability');
+    const filtered = list.filter(u => !(u.provider_id === providerId && u.id === id));
+    setStoredItems('quvo_provider_unavailability', filtered);
+  },
+
+  getSlotOverrides(providerId: string, from?: string, to?: string): SlotOverrideRecord[] {
+    const list = getStoredItems<SlotOverrideRecord>('quvo_provider_slot_overrides');
+    return list.filter(o => {
+      if (o.provider_id !== providerId) return false;
+      if (from && o.date < from) return false;
+      if (to && o.date > to) return false;
+      return true;
+    });
+  },
+
+  addSlotOverride(providerId: string, override: Omit<SlotOverrideRecord, 'id' | 'provider_id' | 'created_at'>): SlotOverrideRecord {
+    const list = getStoredItems<SlotOverrideRecord>('quvo_provider_slot_overrides');
+    const newRecord: SlotOverrideRecord = {
+      ...override,
+      id: generateUUID(),
+      provider_id: providerId,
+      created_at: new Date().toISOString()
+    };
+    list.push(newRecord);
+    setStoredItems('quvo_provider_slot_overrides', list);
+    return newRecord;
+  },
+
+  deleteSlotOverride(providerId: string, id: string): void {
+    const list = getStoredItems<SlotOverrideRecord>('quvo_provider_slot_overrides');
+    const filtered = list.filter(o => !(o.provider_id === providerId && o.id === id));
+    setStoredItems('quvo_provider_slot_overrides', filtered);
+  },
+
+  getAvailableSlots(providerId: string, date: string, _rateCardId?: string): ComputedSlot[] {
+    const schedule = this.getWeeklySchedule(providerId);
+    const dayOfWeek = getDayOfWeekName(date);
+    const daySched = schedule.find(s => s.day_of_week === dayOfWeek);
+
+    const unavailabilities = this.getUnavailabilities(providerId).filter(u => u.date === date);
+    const overrides = this.getSlotOverrides(providerId).filter(o => o.date === date);
+    const fullDayLeave = unavailabilities.find(u => u.is_full_day);
+
+    const slots: ComputedSlot[] = [];
+
+    if (daySched && daySched.is_active && daySched.start_time && daySched.end_time) {
+      const startMins = timeToMins(daySched.start_time);
+      const endMins = timeToMins(daySched.end_time);
+      const duration = daySched.slot_duration_mins || 60;
+      const buffer = daySched.buffer_time_mins || 0;
+
+      let curr = startMins;
+      while (curr + duration <= endMins) {
+        const slotStartMins = curr;
+        const slotEndMins = curr + duration;
+        const slotStart = minsToTime(slotStartMins);
+        const slotEnd = minsToTime(slotEndMins);
+
+        let status: 'AVAILABLE' | 'BOOKED' | 'BLOCKED' | 'UNAVAILABLE' = fullDayLeave ? 'UNAVAILABLE' : 'AVAILABLE';
+        let note = fullDayLeave ? (fullDayLeave.reason || 'Full Day Leave') : undefined;
+
+        if (!fullDayLeave) {
+          const partial = unavailabilities.find(u => !u.is_full_day && u.start_time && u.end_time && overlaps(slotStartMins, slotEndMins, timeToMins(u.start_time), timeToMins(u.end_time)));
+          if (partial) {
+            status = 'UNAVAILABLE';
+            note = partial.reason || 'Hourly Break / Unavailability';
+          }
+        }
+
+        const override = overrides.find(o => overlaps(slotStartMins, slotEndMins, timeToMins(o.start_time), timeToMins(o.end_time)));
+        if (override) {
+          if (override.type === 'BLOCKED') {
+            status = 'BLOCKED';
+            note = override.note || 'Blocked by Admin';
+          } else if (override.type === 'FORCE_AVAILABLE') {
+            status = 'AVAILABLE';
+            note = override.note || 'Force Available';
+          }
+        }
+
+        slots.push({
+          start_time: slotStart,
+          end_time: slotEnd,
+          status,
+          note
+        });
+
+        curr += duration + buffer;
+      }
+    }
+
+    overrides.filter(o => o.type === 'FORCE_AVAILABLE').forEach(o => {
+      const exists = slots.some(s => s.start_time === o.start_time && s.end_time === o.end_time);
+      if (!exists) {
+        slots.push({
+          start_time: o.start_time,
+          end_time: o.end_time,
+          status: 'AVAILABLE',
+          note: o.note || 'Special Session (Force Available)'
+        });
+      }
+    });
+
+    slots.sort((a, b) => timeToMins(a.start_time) - timeToMins(b.start_time));
+    return slots;
+  },
+
+  getAvailableDates(providerId: string, month: string): string[] {
+    const parts = month.split('-');
+    if (parts.length < 2) return [];
+    const yearStr = parts[0];
+    const monthStr = parts[1];
+    const year = parseInt(yearStr, 10);
+    const monthIdx = parseInt(monthStr, 10) - 1;
+
+    if (isNaN(year) || isNaN(monthIdx)) return [];
+
+    const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+    const availableDates: string[] = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayPadded = String(day).padStart(2, '0');
+      const dateStr = `${yearStr}-${monthStr}-${dayPadded}`;
+      const slots = this.getAvailableSlots(providerId, dateStr);
+      if (slots.some(s => s.status === 'AVAILABLE')) {
+        availableDates.push(dateStr);
+      }
+    }
+
+    return availableDates;
   }
 };

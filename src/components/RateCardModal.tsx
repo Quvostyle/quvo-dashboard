@@ -36,7 +36,7 @@ interface RateCardModalProps {
 }
 
 interface RateCardFormValues {
-  name: string;
+  name?: string;
   description?: string;
   categoryId: string;
   subcategoryId: string;
@@ -124,7 +124,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
       setVideoFiles({});
       if (editingRateCard) {
         reset({
-          name: editingRateCard.name,
+          name: editingRateCard.name || "",
           description: editingRateCard.description || "",
           categoryId: editingRateCard.categoryId,
           subcategoryId: editingRateCard.subcategoryId,
@@ -162,7 +162,7 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
 
   const handleFormSubmit = (values: RateCardFormValues) => {
     const formData = new FormData();
-    formData.append("name", values.name);
+    formData.append("name", values.name || "");
     formData.append("description", values.description || "");
     formData.append("categoryId", values.categoryId);
     formData.append("subcategoryId", values.subcategoryId);
@@ -215,21 +215,15 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
       >
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Service Name *
+            Service Name
           </label>
           <Controller
             name="name"
             control={control}
-            rules={{ required: "Service name is required" }}
             render={({ field }) => (
-              <Input {...field} placeholder="e.g. Standard Split AC Service" size="large" />
+              <Input {...field} placeholder="e.g. Standard Split AC Service (optional)" size="large" />
             )}
           />
-          {errors.name && (
-            <span className="text-red-500 text-sm block mt-1">
-              {errors.name.message}
-            </span>
-          )}
         </div>
 
         <div className="mb-4">
@@ -387,28 +381,22 @@ export const RateCardModal: React.FC<RateCardModalProps> = ({
           <Col span={12}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Strike Price (INR) *
+                Strike Price (INR)
               </label>
               <Controller
                 name="strikePrice"
                 control={control}
-                rules={{ required: "Strike price is required" }}
                 render={({ field }) => (
                   <InputNumber
                     {...field}
                     className="w-full"
                     min={0}
                     prefix="₹"
-                    placeholder="699"
+                    placeholder="699 (optional)"
                     size="large"
                   />
                 )}
               />
-              {errors.strikePrice && (
-                <span className="text-red-500 text-sm block mt-1">
-                  {errors.strikePrice.message}
-                </span>
-              )}
             </div>
           </Col>
         </Row>

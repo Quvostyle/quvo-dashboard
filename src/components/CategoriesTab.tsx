@@ -284,10 +284,10 @@ export const CategoriesTab: React.FC = () => {
 
   return (
     <div className="animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3.5">
         <div>
           <p className="label-overline">Taxonomy System</p>
-          <h2 className="text-3xl font-bold">Categories & Subcategories</h2>
+          <h2 className="text-2xl font-bold mt-0.5">Categories & Subcategories</h2>
         </div>
         <Space wrap className="w-full sm:w-auto">
           <Button type="primary" icon={<LuPlus size={16} />} onClick={handleOpenAddCategory} className="w-full sm:w-auto">
