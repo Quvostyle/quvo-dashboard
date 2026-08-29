@@ -568,3 +568,9 @@ textarea.ant-input:focus {
   color: var(--color-cocoa) !important;
   border-color: var(--color-cocoa) !important;
 }
+
+/* Force Ant Design Select tag containers to stay strictly single-line */
+.ant-select-selection-overflow {
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+}

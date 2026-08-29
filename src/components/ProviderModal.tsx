@@ -125,10 +125,19 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
 
         let portUrls: string[] = [];
         if (Array.isArray(editingProvider.ProtfolioImageUploads)) {
-          portUrls = editingProvider.ProtfolioImageUploads;
+          portUrls = editingProvider.ProtfolioImageUploads.map((item: any) =>
+            typeof item === 'string' ? item : item?.url || item?.src || String(item || '')
+          ).filter(Boolean);
         } else if (typeof editingProvider.ProtfolioImageUploads === 'string') {
           try {
-            portUrls = JSON.parse(editingProvider.ProtfolioImageUploads);
+            const parsed = JSON.parse(editingProvider.ProtfolioImageUploads);
+            if (Array.isArray(parsed)) {
+              portUrls = parsed.map((item: any) =>
+                typeof item === 'string' ? item : item?.url || item?.src || String(item || '')
+              ).filter(Boolean);
+            } else {
+              portUrls = [editingProvider.ProtfolioImageUploads];
+            }
           } catch {
             portUrls = editingProvider.ProtfolioImageUploads ? [editingProvider.ProtfolioImageUploads] : [];
           }
@@ -210,9 +219,10 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
       formData.append('ProtfolioImageUploads', file, file.name);
     });
 
-    (values.portfolioUrls || []).forEach(url => {
-      if (url && !url.startsWith('data:')) {
-        formData.append('ProtfolioImageUploads', url);
+    (values.portfolioUrls || []).forEach((item: any) => {
+      const urlStr = typeof item === 'string' ? item : item?.url || item?.src || (typeof item === 'object' ? JSON.stringify(item) : String(item || ''));
+      if (urlStr && typeof urlStr === 'string' && !urlStr.startsWith('data:')) {
+        formData.append('ProtfolioImageUploads', urlStr);
       }
     });
 
@@ -250,7 +260,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 control={control}
                 rules={{ required: 'Profile picture is required' }}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Enter image URL or attach image file" size="large" />
+                  <Input {...field} placeholder="Enter image URL or attach image file" size="middle" />
                 )}
               />
             </Col>
@@ -268,7 +278,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 }}
                 showUploadList={false}
               >
-                <Button icon={<LuUpload size={16} />} className="w-full" size="large">
+                <Button icon={<LuUpload size={16} />} className="w-full" size="middle">
                   Attach Image
                 </Button>
               </Upload>
@@ -303,7 +313,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 control={control}
                 rules={{ required: 'Full name is required' }}
                 render={({ field }) => (
-                  <Input {...field} placeholder="e.g. Ahmed Khan" size="large" />
+                  <Input {...field} placeholder="e.g. Ahmed Khan" size="middle" />
                 )}
               />
               {errors.full_name && (
@@ -329,7 +339,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                   }
                 }}
                 render={({ field }) => (
-                  <Input {...field} placeholder="e.g. ahmed.khan@example.com" size="large" />
+                  <Input {...field} placeholder="e.g. ahmed.khan@example.com" size="middle" />
                 )}
               />
               {errors.email && (
@@ -352,7 +362,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 control={control}
                 rules={{ required: 'Mobile number is required' }}
                 render={({ field }) => (
-                  <Input {...field} placeholder="e.g. +923001234567" size="large" />
+                  <Input {...field} placeholder="e.g. +923001234567" size="middle" />
                 )}
               />
               {errors.mobile && (
@@ -404,7 +414,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                     {...fieldProps}
                     value={value ? dayjs(value) : null}
                     onChange={(val) => onChange(val ? val.format('YYYY-MM-DD') : '')}
-                    size="large"
+                    size="middle"
                     className="w-full"
                     format="YYYY-MM-DD"
                   />
@@ -421,7 +431,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 name="experience"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="e.g. 5" size="large" />
+                  <Input {...field} placeholder="e.g. 5" size="middle" />
                 )}
               />
             </div>
@@ -438,7 +448,7 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                 name="startingFrom"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="e.g. 500" size="large" />
+                  <Input {...field} placeholder="e.g. 500" size="middle" />
                 )}
               />
             </div>
@@ -496,8 +506,10 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                     {...field}
                     mode="tags"
                     placeholder="e.g. Haircut, Coloring, Beard Trim"
-                    size="large"
+                    size="middle"
                     className="w-full"
+                    maxTagCount="responsive"
+                    maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
                     options={[
                       { label: 'Haircut', value: 'Haircut' },
                       { label: 'Coloring', value: 'Coloring' },
@@ -523,8 +535,10 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
                     {...field}
                     mode="multiple"
                     placeholder="e.g. Hair Care"
-                    size="large"
+                    size="middle"
                     className="w-full"
+                    maxTagCount="responsive"
+                    maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
                     options={subcategoryOptions}
                   />
                 )}
@@ -582,23 +596,27 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
 
           {portfolioUrlsValue.length > 0 ? (
             <div className="grid grid-cols-4 gap-3 mt-3">
-              {portfolioUrlsValue.map((url: string, index: number) => (
-                <div key={index} className="relative group border border-line rounded overflow-hidden p-1 bg-[rgba(0,0,0,0.02)]">
-                  <img src={url} alt={`Portfolio ${index + 1}`} className="w-full h-20 object-cover rounded" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updatedUrls = portfolioUrlsValue.filter((_, i) => i !== index);
-                      setValue('portfolioUrls', updatedUrls);
-                      setPortfolioFiles(prev => prev.filter((_, i) => i !== index));
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Remove Image"
-                  >
-                    <LuTrash2 size={12} />
-                  </button>
-                </div>
-              ))}
+              {portfolioUrlsValue.map((item: any, index: number) => {
+                const imgUrl = typeof item === 'string' ? item : item?.url || item?.src || String(item || '');
+                if (!imgUrl) return null;
+                return (
+                  <div key={index} className="relative group border border-line rounded overflow-hidden p-1 bg-[rgba(0,0,0,0.02)]">
+                    <img src={imgUrl} alt={`Portfolio ${index + 1}`} className="w-full h-20 object-cover rounded" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updatedUrls = portfolioUrlsValue.filter((_, i) => i !== index);
+                        setValue('portfolioUrls', updatedUrls);
+                        setPortfolioFiles(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove Image"
+                    >
+                      <LuTrash2 size={12} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center p-4 border border-dashed border-line rounded text-mute text-xs">
@@ -609,14 +627,14 @@ export const ProviderModal: React.FC<ProviderModalProps> = ({
         </div>
 
         {/* Action Form Footer */}
-        <div className="flex justify-end space-x-2 mt-8">
-          <Button size="large" onClick={onCancel}>
+        <div className="flex justify-end space-x-2 mt-6">
+          <Button size="middle" onClick={onCancel}>
             Cancel
           </Button>
           <Button
             type="primary"
             htmlType="submit"
-            size="large"
+            size="middle"
             loading={loading}
           >
             Save Provider Profile
