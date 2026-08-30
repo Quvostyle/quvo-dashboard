@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { Modal, Row, Col, Select, Radio, Descriptions, Divider, Input, Button, Space, message, Upload } from 'antd';
-import { LuExternalLink, LuTrash2, LuUpload } from 'react-icons/lu';
+import { Modal, Row, Col, Select, Radio, Descriptions, Divider, Input, Button, Space, message, Upload, Tag, Popconfirm, Tooltip } from 'antd';
+import { LuExternalLink, LuTrash2, LuUpload, LuVideo, LuCalendar, LuCircleX } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
 import type { IntakeRequest } from '../services/dataService';
 import {
   useGetProvidersQuery,
   useGetLookbookQuery,
+  useGetOrderByIdQuery,
   useAssignStylistMutation,
-  useUpdateOrderMutation,
+  useUpdateOrderStatusMutation,
+  useCancelOrderMutation,
   useSaveIntroNoteMutation,
   useAddLookbookItemMutation,
   useDeleteLookbookItemMutation
 } from '../store/apiSlice';
+import { RescheduleOrderModal } from './RescheduleOrderModal';
 
 interface OrderDetailsModalProps {
   visible: boolean;
@@ -37,14 +40,24 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 }) => {
   if (!selectedOrder) return null;
 
-  const { data: providers = [] } = useGetProvidersQuery();
-  const { data: activeOrderLookbook } = useGetLookbookQuery(selectedOrder?.id || '', {
+  const [showReschedule, setShowReschedule] = useState(false);
+
+  // Fetch full detailed order by ID
+  const { data: fullOrder } = useGetOrderByIdQuery(selectedOrder.id, {
     skip: !selectedOrder || !visible
+  });
+
+  const activeOrder = fullOrder || selectedOrder;
+
+  const { data: providers = [] } = useGetProvidersQuery();
+  const { data: activeOrderLookbook } = useGetLookbookQuery(activeOrder.id || '', {
+    skip: !activeOrder || !visible
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [assignStylist] = useAssignStylistMutation();
-  const [updateOrder] = useUpdateOrderMutation();
+  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [cancelOrder] = useCancelOrderMutation();
   const [saveIntroNote] = useSaveIntroNoteMutation();
   const [addLookbookItem, { isLoading: isAddingItem }] = useAddLookbookItemMutation();
   const [deleteLookbookItem] = useDeleteLookbookItemMutation();
@@ -68,7 +81,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   const handleAssignStylist = async (stylistId: string) => {
     try {
-      const updated = await assignStylist({ orderId: selectedOrder.id, stylistId: stylistId || null }).unwrap();
+      const updated = await assignStylist({ orderId: activeOrder.id, stylistId: stylistId || null }).unwrap();
       if (onOrderUpdated) onOrderUpdated(updated);
       message.success('Provider assignment updated.');
     } catch (e: any) {
@@ -76,19 +89,29 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   };
 
-  const handleUpdateOrderStatus = async (status: IntakeRequest['status']) => {
+  const handleUpdateOrderStatus = async (status: string) => {
     try {
-      const updated = await updateOrder({ id: selectedOrder.id, status }).unwrap();
+      const updated = await updateOrderStatus({ id: activeOrder.id, status }).unwrap();
       if (onOrderUpdated) onOrderUpdated(updated);
-      message.success(`Status set to: ${status}`);
+      message.success(`Order status updated to: ${status}`);
     } catch (e: any) {
-      message.error(e.data || e.message || 'Error updating status');
+      message.error(e?.data?.message || e?.message || 'Error updating status');
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    try {
+      const cancelled = await cancelOrder(activeOrder.id).unwrap();
+      if (onOrderUpdated) onOrderUpdated(cancelled);
+      message.success('Order soft-cancelled.');
+    } catch (e: any) {
+      message.error(e?.data?.message || e?.message || 'Error cancelling order');
     }
   };
 
   const handleSaveIntroNote = async (introNote: string) => {
     try {
-      await saveIntroNote({ orderId: selectedOrder.id, introNote }).unwrap();
+      await saveIntroNote({ orderId: activeOrder.id, introNote }).unwrap();
       message.success('Lookbook intro note saved.');
     } catch (e: any) {
       message.error(e.data || e.message || 'Error saving intro note');
@@ -111,7 +134,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
     try {
       await addLookbookItem({
-        orderId: selectedOrder.id,
+        orderId: activeOrder.id,
         item: formData as any
       }).unwrap();
       setImageFile(null);
@@ -131,76 +154,135 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   const handleDeleteLookbookItem = async (itemId: string) => {
     try {
-      await deleteLookbookItem({ orderId: selectedOrder.id, itemId }).unwrap();
+      await deleteLookbookItem({ orderId: activeOrder.id, itemId }).unwrap();
       message.info('Lookbook item removed.');
     } catch (e: any) {
       message.error(e.data || e.message || 'Error deleting item');
     }
   };
 
+  const isCancelled = activeOrder.is_cancelled || (activeOrder.status || '').toUpperCase() === 'CANCELLED';
+
   return (
-    <Modal
-      title={`Intake Request: ${selectedOrder.occasion}`}
-      open={visible}
-      centered
-      onCancel={onCancel}
-      footer={null}
-      width={850}
-      destroyOnClose
-      className="premium-modal"
-    >
-      <div>
-        {/* Status & Stylist Panel */}
-        <Row gutter={16} className="bg-[rgba(184,148,106,0.04)] p-5 border border-line mb-6">
-          <Col span={12}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Order Status
-              </label>
-              <Select
-                value={selectedOrder.status}
-                onChange={handleUpdateOrderStatus}
-                className="w-full"
-                size="large"
-              >
-                <Select.Option value="pending">Pending Review</Select.Option>
-                <Select.Option value="assigned">Assigned (In Progress)</Select.Option>
-                <Select.Option value="completed">Completed (Lookbook)</Select.Option>
-              </Select>
-            </div>
-          </Col>
+    <>
+      <Modal
+        title={`Admin Order #${activeOrder.id.slice(0, 8)} - ${activeOrder.occasion || 'Booking Details'}`}
+        open={visible}
+        centered
+        onCancel={onCancel}
+        footer={null}
+        width={850}
+        destroyOnClose
+        className="premium-modal"
+      >
+        <div>
+          {/* Status & Stylist Panel */}
+          <Row gutter={16} className="bg-[rgba(184,148,106,0.04)] p-5 border border-line mb-6 items-center">
+            <Col span={10}>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Order Status
+                </label>
+                <Select
+                  value={(activeOrder.status || 'PENDING').toUpperCase()}
+                  onChange={handleUpdateOrderStatus}
+                  className="w-full"
+                  size="large"
+                >
+                  <Select.Option value="PENDING">PENDING</Select.Option>
+                  <Select.Option value="CONFIRMED">CONFIRMED</Select.Option>
+                  <Select.Option value="IN_PROGRESS">IN_PROGRESS</Select.Option>
+                  <Select.Option value="COMPLETED">COMPLETED</Select.Option>
+                  <Select.Option value="RESCHEDULED">RESCHEDULED</Select.Option>
+                  <Select.Option value="CANCELLED">CANCELLED</Select.Option>
+                </Select>
+              </div>
+            </Col>
 
-          <Col span={12}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assign Partner Provider
-              </label>
-              <Select
-                value={selectedOrder.assigned_stylist_id || ''}
-                onChange={handleAssignStylist}
-                className="w-full"
-                size="large"
-              >
-                <Select.Option value="">[Unassigned] Move to Pending</Select.Option>
-                {providers.map(p => (
-                  <Select.Option key={p.id} value={p.id}>{p.full_name}</Select.Option>
-                ))}
-              </Select>
-            </div>
-          </Col>
-        </Row>
+            <Col span={10}>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Assign Partner Provider
+                </label>
+                <Select
+                  value={activeOrder.provider?.id || activeOrder.assigned_stylist_id || ''}
+                  onChange={handleAssignStylist}
+                  className="w-full"
+                  size="large"
+                >
+                  <Select.Option value="">[Unassigned] Move to Pending</Select.Option>
+                  {providers.map(p => (
+                    <Select.Option key={p.id} value={p.id}>{p.full_name}</Select.Option>
+                  ))}
+                </Select>
+              </div>
+            </Col>
 
-        {/* Profile descriptions */}
-        <Descriptions title="Client Profiling Parameters" bordered size="small" column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }} className="mb-6">
-          <Descriptions.Item label="Client">{selectedOrder.user_name}</Descriptions.Item>
-          <Descriptions.Item label="Email">{selectedOrder.user_email}</Descriptions.Item>
-          <Descriptions.Item label="City Location">{selectedOrder.city}</Descriptions.Item>
-          <Descriptions.Item label="Demographic">{selectedOrder.gender}</Descriptions.Item>
-          <Descriptions.Item label="Style Aesthetic">{selectedOrder.style_preference}</Descriptions.Item>
-          <Descriptions.Item label="Body Contour">{selectedOrder.body_type}</Descriptions.Item>
-          <Descriptions.Item label="Tier Budget">{selectedOrder.budget || '—'}</Descriptions.Item>
-          <Descriptions.Item label="Created">{new Date(selectedOrder.created_at).toLocaleDateString()}</Descriptions.Item>
-        </Descriptions>
+            <Col span={4} className="flex justify-end gap-2">
+              <Tooltip title="Reschedule Session">
+                <Button
+                  size="large"
+                  icon={<LuCalendar size={18} />}
+                  onClick={() => setShowReschedule(true)}
+                  disabled={isCancelled}
+                />
+              </Tooltip>
+
+              {!isCancelled && (
+                <Popconfirm
+                  title="Soft Cancel Order"
+                  description="Set status to CANCELLED and soft-delete?"
+                  onConfirm={handleCancelOrder}
+                  okText="Cancel Order"
+                  cancelText="Close"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Tooltip title="Cancel Booking">
+                    <Button size="large" danger icon={<LuCircleX size={18} />} />
+                  </Tooltip>
+                </Popconfirm>
+              )}
+            </Col>
+          </Row>
+
+          {/* Detailed Descriptions */}
+          <Descriptions title="Client & Booking Summary" bordered size="small" column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }} className="mb-6">
+            <Descriptions.Item label="Client Name">{activeOrder.user_name || activeOrder.user?.full_name || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Client Email">{activeOrder.user_email || activeOrder.user?.email || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Client Mobile">{activeOrder.user?.mobile || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Provider">{activeOrder.provider?.full_name || 'Unassigned'}</Descriptions.Item>
+            <Descriptions.Item label="Rate Card">{activeOrder.rate_card?.name || activeOrder.occasion || 'Standard'}</Descriptions.Item>
+            <Descriptions.Item label="Total Price">{activeOrder.total_price ? `₹${activeOrder.total_price}` : activeOrder.budget || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Session Date">{activeOrder.session_date ? new Date(activeOrder.session_date).toLocaleDateString() : '—'}</Descriptions.Item>
+            <Descriptions.Item label="Session Slot">{activeOrder.session_start_time ? `${activeOrder.session_start_time} - ${activeOrder.session_end_time || ''}` : '—'}</Descriptions.Item>
+            <Descriptions.Item label="Payment Status">
+              <Tag color={activeOrder.payment?.status === 'CAPTURED' ? 'success' : 'warning'}>
+                {activeOrder.payment?.status || 'PENDING'}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Created At">{new Date(activeOrder.created_at).toLocaleDateString()}</Descriptions.Item>
+          </Descriptions>
+
+          {/* Google Meet Link */}
+          {activeOrder.google_meet_event?.meet_link && (
+            <div className="bg-[#EFF6FF] border border-blue-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <LuVideo className="text-blue-600" size={20} />
+                <div>
+                  <div className="text-xs font-semibold text-blue-900 uppercase">Google Meet Session</div>
+                  <div className="text-sm font-mono text-blue-700">{activeOrder.google_meet_event.meet_link}</div>
+                </div>
+              </div>
+              <a
+                href={activeOrder.google_meet_event.meet_link}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-xs no-underline hover:bg-blue-700"
+              >
+                Join Meeting
+              </a>
+            </div>
+          )}
 
         {/* Dynamic Questionnaire Responses */}
         {selectedOrder.form_responses && Object.keys(selectedOrder.form_responses).length > 0 && (
@@ -477,6 +559,15 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           </div>
         )}
       </div>
+      <RescheduleOrderModal
+        visible={showReschedule}
+        order={activeOrder}
+        onCancel={() => setShowReschedule(false)}
+        onSuccess={(updated) => {
+          if (onOrderUpdated) onOrderUpdated(updated);
+        }}
+      />
     </Modal>
+    </>
   );
 };
