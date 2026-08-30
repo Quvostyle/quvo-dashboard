@@ -74,15 +74,15 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   }
 
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(o => o.status === 'pending').length;
-  const assignedOrders = orders.filter(o => o.status === 'assigned').length;
-  const completedOrders = orders.filter(o => o.status === 'completed').length;
+  const pendingOrders = orders.filter(o => (o.status || '').toUpperCase() === 'PENDING' || o.status === 'pending').length;
+  const inProgressOrders = orders.filter(o => ['CONFIRMED', 'IN_PROGRESS', 'ASSIGNED', 'RESCHEDULED', 'assigned'].includes((o.status || '').toUpperCase())).length;
+  const completedOrders = orders.filter(o => (o.status || '').toUpperCase() === 'COMPLETED' || o.status === 'completed').length;
   const totalProviders = providers.length;
   const activeCategoriesCount = categories.filter(c => c.isActive).length;
 
   const statusPercentages = [
     totalOrders > 0 ? (pendingOrders / totalOrders) * 100 : 0,
-    totalOrders > 0 ? (assignedOrders / totalOrders) * 100 : 0,
+    totalOrders > 0 ? (inProgressOrders / totalOrders) * 100 : 0,
     totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0
   ];
 
@@ -171,11 +171,17 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               dataSource={orders.slice(0, 5)}
               locale={{ emptyText: <div className="py-8 text-center text-mute italic">No active requests in queue</div> }}
               renderItem={(order) => {
-                const clientInitials = order.user_name ? order.user_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'C';
+                const name = order.user_name || order.user?.full_name || 'Client';
+                const clientInitials = name ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'C';
+                const rawStatus = (order.status || 'PENDING').toUpperCase();
                 const statusColors: Record<string, string> = {
-                  pending: 'gold',
-                  assigned: 'blue',
-                  completed: 'success'
+                  PENDING: 'gold',
+                  CONFIRMED: 'blue',
+                  IN_PROGRESS: 'purple',
+                  COMPLETED: 'green',
+                  CANCELLED: 'red',
+                  RESCHEDULED: 'cyan',
+                  ASSIGNED: 'blue'
                 };
                 return (
                   <List.Item
@@ -195,8 +201,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       title={
                         <div className="flex items-center gap-2 flex-wrap">
                           <strong className="text-[0.95rem] font-serif text-ink">{order.occasion}</strong>
-                          <Tag className="capitalize !rounded-[10px] text-[0.65rem] !m-0 !px-2 py-0 border-none" color={statusColors[order.status] || 'default'}>
-                            {order.status}
+                          <Tag className="capitalize !rounded-[10px] text-[0.65rem] !m-0 !px-2 py-0 border-none" color={statusColors[rawStatus] || 'default'}>
+                            {rawStatus}
                           </Tag>
                         </div>
                       }
@@ -270,7 +276,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <div className="w-2.5 h-2.5 rounded-full bg-gold" />
                     <span>In Progress</span>
                   </div>
-                  <strong>{assignedOrders} ({Math.round(statusPercentages[1])}%)</strong>
+                  <strong>{inProgressOrders} ({Math.round(statusPercentages[1])}%)</strong>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-ink">

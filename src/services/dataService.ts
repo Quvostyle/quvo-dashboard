@@ -112,23 +112,95 @@ export interface Lookbook {
   updated_at: string;
 }
 
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'RESCHEDULED' | 'pending' | 'assigned' | 'completed';
+
+export interface AdminUserRef {
+  id: string;
+  full_name?: string;
+  email?: string;
+  mobile?: string | null;
+}
+
+export interface AdminProviderRef {
+  id: string;
+  full_name?: string;
+  email?: string;
+  mobile?: string | null;
+}
+
+export interface AdminRateCardRef {
+  id: string;
+  name?: string;
+  price?: string | number;
+  images?: string[];
+}
+
+export interface AdminPaymentRef {
+  id: string;
+  status?: string;
+  gateway_order_id?: string;
+  amount?: string | number;
+  currency?: string;
+}
+
+export interface AdminMeetEventRef {
+  id: string;
+  booking_id?: string;
+  meet_link?: string;
+  status?: string;
+  calendar_event_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AdminInfo {
+  id: string;
+  name: string;
+  email: string;
+  created_at?: string;
+}
+
 export interface IntakeRequest {
   id: string;
-  user_id: string;
-  user_email: string;
-  user_name: string;
-  occasion: string;
-  budget: string | null;
-  gender: string;
-  style_preference: string;
-  body_type: string;
-  city: string;
+  user_id?: string;
+  user_email?: string;
+  user_name?: string;
+  occasion?: string;
+  budget?: string | null;
+  gender?: string;
+  style_preference?: string;
+  body_type?: string;
+  city?: string;
   notes?: string;
-  photo_ids: string[];
-  status: 'pending' | 'assigned' | 'completed';
-  assigned_stylist_id: string | null; // Mapped to providerId
+  photo_ids?: string[];
+  status: OrderStatus;
+  assigned_stylist_id?: string | null;
   form_responses?: Record<string, any>;
   created_at: string;
+  updated_at?: string;
+
+  // Admin Booking API relation fields
+  provider_id?: string | null;
+  rate_card_id?: string;
+  payment_id?: string;
+  session_date?: string;
+  session_start_time?: string;
+  session_end_time?: string;
+  is_session_done?: boolean;
+  is_rescheduled?: boolean;
+  is_cancelled?: boolean;
+  cancelled_at?: string | null;
+  note?: string;
+  campaign_name?: string;
+  base_price?: string | number;
+  total_price?: string | number;
+  rate_card?: AdminRateCardRef | null;
+  provider?: AdminProviderRef | null;
+  user?: AdminUserRef | null;
+  payment?: AdminPaymentRef | null;
+  google_meet_event?: AdminMeetEventRef | null;
+  customer_feedback?: any;
+  provider_feedback?: any;
 }
 
 // ─── UTILITIES ───────────────────────────────────────────────────────────────
@@ -246,6 +318,13 @@ function setStoredItems<T>(key: string, items: T[]): void {
 // ─── CRUD PERSISTENCE ─────────────────────────────────────────────────────────
 
 export const dataService = {
+  _currentAdmin: {
+    id: '149e3e63-e029-48cc-b325-47eb882bd1bc',
+    name: 'Super Admin',
+    email: 'admin@quvo.com',
+    created_at: new Date().toISOString()
+  } as AdminInfo | null,
+
   // --- Categories ---
   getCategories(): Category[] {
     return getStoredItems<Category>('quvo_categories');
@@ -414,9 +493,90 @@ export const dataService = {
     setStoredItems('quvo_rate_cards', filtered);
   },
 
-  // --- Orders (Intake Requests) ---
+  // --- Admin Auth ---
+  adminLogin(email?: string, _password?: string): AdminInfo {
+    const admin: AdminInfo = {
+      id: '149e3e63-e029-48cc-b325-47eb882bd1bc',
+      name: 'Super Admin',
+      email: email || 'admin@quvo.com',
+      created_at: new Date().toISOString()
+    };
+    this._currentAdmin = admin;
+    return admin;
+  },
+
+  adminLogout(): void {
+    this._currentAdmin = null;
+  },
+
+  getAdminMe(): AdminInfo | null {
+    return this._currentAdmin;
+  },
+
+  // --- Orders (Intake Requests & Bookings) ---
   getOrders(): IntakeRequest[] {
     return getStoredItems<IntakeRequest>('quvo_orders');
+  },
+
+  getAdminOrders(filterParams?: { status?: string; from?: string; to?: string; search?: string }): { count: number; bookings: IntakeRequest[] } {
+    let orders = this.getOrders();
+    if (filterParams?.status) {
+      const s = filterParams.status.toUpperCase();
+      orders = orders.filter(o => (o.status || '').toUpperCase() === s);
+    }
+    if (filterParams?.from) {
+      orders = orders.filter(o => (o.created_at || '').slice(0, 10) >= filterParams.from!);
+    }
+    if (filterParams?.to) {
+      orders = orders.filter(o => (o.created_at || '').slice(0, 10) <= filterParams.to!);
+    }
+    if (filterParams?.search) {
+      const q = filterParams.search.toLowerCase();
+      orders = orders.filter(o => 
+        (o.user_name || o.user?.full_name || '').toLowerCase().includes(q) ||
+        (o.user_email || o.user?.email || '').toLowerCase().includes(q) ||
+        (o.provider?.full_name || '').toLowerCase().includes(q) ||
+        (o.id || '').toLowerCase().includes(q)
+      );
+    }
+    return {
+      count: orders.length,
+      bookings: orders
+    };
+  },
+
+  getAdminOrderById(id: string): IntakeRequest {
+    const orders = this.getOrders();
+    const found = orders.find(o => o.id === id);
+    if (!found) throw new Error('Booking not found');
+    return found;
+  },
+
+  updateAdminOrderStatus(id: string, status: OrderStatus): IntakeRequest {
+    return this.updateOrder(id, {
+      status,
+      updated_at: new Date().toISOString()
+    });
+  },
+
+  rescheduleAdminOrder(id: string, rescheduleData: { session_date?: string; session_start_time?: string; session_end_time?: string }): IntakeRequest {
+    return this.updateOrder(id, {
+      session_date: rescheduleData.session_date,
+      session_start_time: rescheduleData.session_start_time,
+      session_end_time: rescheduleData.session_end_time,
+      is_rescheduled: true,
+      status: 'RESCHEDULED',
+      updated_at: new Date().toISOString()
+    });
+  },
+
+  cancelAdminOrder(id: string): IntakeRequest {
+    return this.updateOrder(id, {
+      is_cancelled: true,
+      status: 'CANCELLED',
+      cancelled_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
   },
 
   addOrder(order: Omit<IntakeRequest, 'id' | 'created_at' | 'status' | 'assigned_stylist_id'>): IntakeRequest {
@@ -424,7 +584,7 @@ export const dataService = {
     const newOrder: IntakeRequest = {
       ...order,
       id: `req_${Math.floor(1000 + Math.random() * 9000)}`,
-      status: 'pending',
+      status: 'PENDING',
       assigned_stylist_id: null,
       created_at: new Date().toISOString()
     };
@@ -448,9 +608,10 @@ export const dataService = {
   },
 
   assignStylistToOrder(orderId: string, stylistId: string | null): IntakeRequest {
-    const status = stylistId ? 'assigned' : 'pending';
+    const status = stylistId ? 'CONFIRMED' : 'PENDING';
     return this.updateOrder(orderId, {
       assigned_stylist_id: stylistId,
+      provider_id: stylistId,
       status: status
     });
   },
