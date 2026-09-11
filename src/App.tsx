@@ -20,7 +20,8 @@ import {
   LuMail,
   LuLock,
   LuMenu,
-  LuClock
+  LuClock,
+  LuChartBar
 } from 'react-icons/lu';
 import { useForm, Controller } from 'react-hook-form';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
@@ -41,6 +42,7 @@ import { CategoriesTab } from './components/CategoriesTab';
 import { ProvidersTab } from './components/ProvidersTab';
 import { RateCardsTab } from './components/RateCardsTab';
 import { ProviderSlotsTab } from './components/ProviderSlotsTab';
+import { AnalyticsTab } from './components/AnalyticsTab';
 
 // Shared details modal
 import { OrderDetailsModal } from './components/OrderDetailsModal';
@@ -50,6 +52,7 @@ const { Sider, Content, Header } = Layout;
 
 const tabTitles: Record<string, string> = {
   overview: 'Studio Overview',
+  analytics: 'Analytics & Performance',
   orders: 'Intake Queue',
   categories: 'Taxonomy System',
   providers: 'Stylist Partners',
@@ -234,7 +237,7 @@ const DashboardLayout: React.FC = () => {
     }
     dispatch(apiSlice.util.resetApiState());
     message.info('Logged out successfully.');
-    navigate('/login', { replace: true });
+    window.location.href = '/login';
   };
 
   const handleOpenOrderDetails = (order: IntakeRequest) => {
@@ -282,6 +285,7 @@ const DashboardLayout: React.FC = () => {
         className="sidebar-menu"
         items={[
           { key: 'overview', icon: <LuLayoutDashboard size={18} />, label: 'Overview' },
+          { key: 'analytics', icon: <LuChartBar size={18} />, label: 'Analytics' },
           { key: 'orders', icon: <LuShoppingBag size={18} />, label: `Orders (${pendingOrdersCount} pend)` },
           { key: 'categories', icon: <LuFolder size={18} />, label: 'Categories' },
           { key: 'providers', icon: <LuUser size={18} />, label: 'Providers' },
@@ -360,6 +364,7 @@ const DashboardLayout: React.FC = () => {
                 />
               }
             />
+            <Route path="/analytics" element={<AnalyticsTab />} />
             <Route
               path="/orders"
               element={

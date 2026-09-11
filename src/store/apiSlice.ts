@@ -1,5 +1,25 @@
 import { api } from '../services/api';
-import type { Category, Provider, RateCard, IntakeRequest, Lookbook, LookbookItem, WeeklyScheduleDay, UnavailabilityRecord, SlotOverrideRecord, ComputedSlot } from '../services/dataService';
+import type {
+  Category,
+  Provider,
+  RateCard,
+  IntakeRequest,
+  Lookbook,
+  LookbookItem,
+  WeeklyScheduleDay,
+  UnavailabilityRecord,
+  SlotOverrideRecord,
+  ComputedSlot,
+  AnalyticsSummaryStats,
+  DailyVisit,
+  TopPage,
+  DeviceBreakdown,
+  BrowserBreakdown,
+  ActiveSession,
+  RecentVisit,
+  UserJourneyStep,
+  ActivityLog
+} from '../services/dataService';
 
 const unwrapResponse = (response: any) => response?.data ?? response;
 const unwrapArray = (response: any, key: string) => {
@@ -420,6 +440,53 @@ export const apiSlice = api.injectEndpoints({
       },
       transformResponse: (res: any) => res?.slots || res?.data?.slots || (Array.isArray(res) ? res : []),
       providesTags: ['SlotAvailability']
+    }),
+
+    // Analytics Endpoints
+    getAnalyticsSummary: builder.query<AnalyticsSummaryStats, number | void>({
+      query: (days = 30) => `/analytics/summary?days=${days}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsDaily: builder.query<DailyVisit[], number | void>({
+      query: (days = 30) => `/analytics/daily?days=${days}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsTopPages: builder.query<TopPage[], number | void>({
+      query: (days = 30) => `/analytics/top-pages?days=${days}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsDevices: builder.query<DeviceBreakdown[], number | void>({
+      query: (days = 30) => `/analytics/devices?days=${days}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsBrowsers: builder.query<BrowserBreakdown[], number | void>({
+      query: (days = 30) => `/analytics/browsers?days=${days}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsActiveSessions: builder.query<ActiveSession[], void>({
+      query: () => '/analytics/active-sessions',
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsRecentVisits: builder.query<RecentVisit[], number | void>({
+      query: (limit = 50) => `/analytics/recent-visits?limit=${limit}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
+    }),
+    getAnalyticsJourney: builder.query<UserJourneyStep[], string>({
+      query: (sessionId) => `/analytics/journey/${sessionId}`,
+      transformResponse: unwrapResponse,
+      providesTags: (_res, _err, id) => [{ type: 'Analytics', id }]
+    }),
+    getAnalyticsLogs: builder.query<ActivityLog[], number | void>({
+      query: (limit = 100) => `/analytics/logs?limit=${limit}`,
+      transformResponse: unwrapResponse,
+      providesTags: ['Analytics']
     })
   }),
   overrideExisting: false,
@@ -464,5 +531,14 @@ export const {
   useAddSlotOverrideMutation,
   useDeleteSlotOverrideMutation,
   useGetAvailableDatesQuery,
-  useGetAvailableSlotsQuery
+  useGetAvailableSlotsQuery,
+  useGetAnalyticsSummaryQuery,
+  useGetAnalyticsDailyQuery,
+  useGetAnalyticsTopPagesQuery,
+  useGetAnalyticsDevicesQuery,
+  useGetAnalyticsBrowsersQuery,
+  useGetAnalyticsActiveSessionsQuery,
+  useGetAnalyticsRecentVisitsQuery,
+  useGetAnalyticsJourneyQuery,
+  useGetAnalyticsLogsQuery
 } = apiSlice;

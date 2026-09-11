@@ -173,6 +173,43 @@ const customBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryEr
       const rateCardId = urlParams.get('rateCardId') || undefined;
       return { data: { slots: dataService.getAvailableSlots(providerId, date, rateCardId) } };
     }
+
+    // 6. Analytics API Fallbacks
+    if (url.includes('/analytics/') && method === 'GET') {
+      const urlParams = new URLSearchParams(url.includes('?') ? url.split('?')[1] : '');
+      const days = parseInt(urlParams.get('days') || '30', 10);
+      const limit = parseInt(urlParams.get('limit') || '50', 10);
+
+      if (url.includes('/analytics/summary')) {
+        return { data: { success: true, statusCode: 200, message: 'Analytics summary fetched', data: dataService.getAnalyticsSummary(days) } };
+      }
+      if (url.includes('/analytics/daily')) {
+        return { data: { success: true, statusCode: 200, message: 'Daily visits fetched', data: dataService.getAnalyticsDaily(days) } };
+      }
+      if (url.includes('/analytics/top-pages')) {
+        return { data: { success: true, statusCode: 200, message: 'Top pages fetched', data: dataService.getAnalyticsTopPages(days) } };
+      }
+      if (url.includes('/analytics/devices')) {
+        return { data: { success: true, statusCode: 200, message: 'Devices breakdown fetched', data: dataService.getAnalyticsDevices(days) } };
+      }
+      if (url.includes('/analytics/browsers')) {
+        return { data: { success: true, statusCode: 200, message: 'Browsers breakdown fetched', data: dataService.getAnalyticsBrowsers(days) } };
+      }
+      if (url.includes('/analytics/active-sessions')) {
+        return { data: { success: true, statusCode: 200, message: 'Active sessions fetched', data: dataService.getAnalyticsActiveSessions() } };
+      }
+      if (url.includes('/analytics/recent-visits')) {
+        return { data: { success: true, statusCode: 200, message: 'Recent visits fetched', data: dataService.getAnalyticsRecentVisits(limit) } };
+      }
+      const journeyMatch = url.match(/\/analytics\/journey\/([^/?]+)/);
+      if (journeyMatch) {
+        const sessionId = journeyMatch[1];
+        return { data: { success: true, statusCode: 200, message: 'User journey fetched', data: dataService.getAnalyticsJourney(sessionId) } };
+      }
+      if (url.includes('/analytics/logs')) {
+        return { data: { success: true, statusCode: 200, message: 'Activity logs fetched', data: dataService.getAnalyticsLogs(limit) } };
+      }
+    }
   } catch (e: any) {
     console.error('Fallback dataService error:', e);
   }
@@ -183,6 +220,6 @@ const customBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryEr
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: customBaseQuery,
-  tagTypes: ['Category', 'Provider', 'RateCard', 'Order', 'Lookbook', 'SlotAvailability', 'AdminAuth'],
+  tagTypes: ['Category', 'Provider', 'RateCard', 'Order', 'Lookbook', 'SlotAvailability', 'AdminAuth', 'Analytics'],
   endpoints: () => ({}),
 });
