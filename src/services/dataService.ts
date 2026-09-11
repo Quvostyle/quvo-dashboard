@@ -135,6 +135,74 @@ export interface AdminRateCardRef {
   images?: string[];
 }
 
+export interface AnalyticsSummaryStats {
+  totalVisits: number;
+  totalSessions: number;
+  guestVisits: number;
+  loggedInVisits: number;
+  guestPercent: number;
+  loggedInPercent: number;
+  avgTimeSpentSeconds: number;
+}
+
+export interface DailyVisit {
+  date: string;
+  count: number;
+}
+
+export interface TopPage {
+  url: string;
+  count: number;
+  avgTimeSeconds: number;
+}
+
+export interface DeviceBreakdown {
+  device: string;
+  count: number;
+}
+
+export interface BrowserBreakdown {
+  browser: string;
+  count: number;
+}
+
+export interface ActiveSession {
+  id: string;
+  user_email: string | null;
+  device_type: string;
+  browser: string;
+  page_count: number;
+  last_active: string;
+}
+
+export interface RecentVisit {
+  id: string;
+  url: string;
+  user_email: string | null;
+  browser: string;
+  device_type: string;
+  time_spent: number;
+  created_at: string;
+}
+
+export interface UserJourneyStep {
+  id: string;
+  url: string;
+  user_email: string | null;
+  browser: string;
+  device_type: string;
+  time_spent: number;
+  created_at: string;
+}
+
+export interface ActivityLog {
+  action: string;
+  user_email: string | null;
+  page: string;
+  payload: Record<string, any>;
+  created_at: string;
+}
+
 export interface AdminPaymentRef {
   id: string;
   status?: string;
@@ -860,5 +928,190 @@ export const dataService = {
     }
 
     return availableDates;
+  },
+
+  getAnalyticsSummary(days = 30): AnalyticsSummaryStats {
+    const factor = days / 30;
+    const totalVisits = Math.round(1240 * factor);
+    const totalSessions = Math.round(320 * factor);
+    const guestVisits = Math.round(totalVisits * 0.72);
+    const loggedInVisits = totalVisits - guestVisits;
+    return {
+      totalVisits,
+      totalSessions,
+      guestVisits,
+      loggedInVisits,
+      guestPercent: 72,
+      loggedInPercent: 28,
+      avgTimeSpentSeconds: 47
+    };
+  },
+
+  getAnalyticsDaily(days = 30): DailyVisit[] {
+    const result: DailyVisit[] = [];
+    const today = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const count = 30 + Math.floor(Math.sin(i) * 20 + Math.random() * 25);
+      result.push({ date: dateStr, count });
+    }
+    return result;
+  },
+
+  getAnalyticsTopPages(_days = 30): TopPage[] {
+    return [
+      { url: '/', count: 312, avgTimeSeconds: 38 },
+      { url: '/stylists', count: 187, avgTimeSeconds: 62 },
+      { url: '/rate-cards', count: 145, avgTimeSeconds: 45 },
+      { url: '/book/session', count: 98, avgTimeSeconds: 84 },
+      { url: '/lookbook/gallery', count: 76, avgTimeSeconds: 52 }
+    ];
+  },
+
+  getAnalyticsDevices(_days = 30): DeviceBreakdown[] {
+    return [
+      { device: 'mobile', count: 780 },
+      { device: 'desktop', count: 410 },
+      { device: 'tablet', count: 50 }
+    ];
+  },
+
+  getAnalyticsBrowsers(_days = 30): BrowserBreakdown[] {
+    return [
+      { browser: 'Chrome', count: 640 },
+      { browser: 'Safari', count: 390 },
+      { browser: 'Firefox', count: 120 },
+      { browser: 'Edge', count: 90 }
+    ];
+  },
+
+  getAnalyticsActiveSessions(): ActiveSession[] {
+    const now = new Date();
+    return [
+      {
+        id: 'sess_9a8b7c6d',
+        user_email: 'priya.sharma@example.com',
+        device_type: 'mobile',
+        browser: 'Safari',
+        page_count: 5,
+        last_active: new Date(now.getTime() - 2 * 60000).toISOString()
+      },
+      {
+        id: 'sess_1f2e3d4c',
+        user_email: null,
+        device_type: 'desktop',
+        browser: 'Chrome',
+        page_count: 3,
+        last_active: new Date(now.getTime() - 5 * 60000).toISOString()
+      },
+      {
+        id: 'sess_5b6a7c8d',
+        user_email: 'rahul.verma@example.com',
+        device_type: 'mobile',
+        browser: 'Chrome',
+        page_count: 7,
+        last_active: new Date(now.getTime() - 8 * 60000).toISOString()
+      }
+    ];
+  },
+
+  getAnalyticsRecentVisits(limit = 50): RecentVisit[] {
+    const pages = ['/', '/stylists', '/rate-cards', '/book/session', '/lookbook/gallery'];
+    const browsers = ['Chrome', 'Safari', 'Firefox', 'Edge'];
+    const devices = ['mobile', 'desktop', 'tablet'];
+    const emails = ['user1@example.com', null, 'client@quvo.in', null, 'alex@demo.com'];
+
+    const result: RecentVisit[] = [];
+    const now = new Date();
+    for (let i = 0; i < Math.min(limit, 30); i++) {
+      const timeAgo = i * 3 * 60000;
+      result.push({
+        id: `visit_${i + 100}`,
+        url: pages[i % pages.length],
+        user_email: emails[i % emails.length],
+        browser: browsers[i % browsers.length],
+        device_type: devices[i % devices.length],
+        time_spent: Math.floor(Math.random() * 90) + 10,
+        created_at: new Date(now.getTime() - timeAgo).toISOString()
+      });
+    }
+    return result;
+  },
+
+  getAnalyticsJourney(sessionId: string): UserJourneyStep[] {
+    return [
+      {
+        id: `${sessionId}_step_1`,
+        url: '/',
+        user_email: 'user@example.com',
+        browser: 'Safari',
+        device_type: 'mobile',
+        time_spent: 18,
+        created_at: '2026-09-10T07:50:00Z'
+      },
+      {
+        id: `${sessionId}_step_2`,
+        url: '/stylists',
+        user_email: 'user@example.com',
+        browser: 'Safari',
+        device_type: 'mobile',
+        time_spent: 45,
+        created_at: '2026-09-10T07:51:00Z'
+      },
+      {
+        id: `${sessionId}_step_3`,
+        url: '/stylists/123',
+        user_email: 'user@example.com',
+        browser: 'Safari',
+        device_type: 'mobile',
+        time_spent: 60,
+        created_at: '2026-09-10T07:52:30Z'
+      },
+      {
+        id: `${sessionId}_step_4`,
+        url: '/rate-cards/xyz',
+        user_email: 'user@example.com',
+        browser: 'Safari',
+        device_type: 'mobile',
+        time_spent: 90,
+        created_at: '2026-09-10T07:54:00Z'
+      }
+    ];
+  },
+
+  getAnalyticsLogs(limit = 100): ActivityLog[] {
+    const logs: ActivityLog[] = [
+      {
+        action: 'add_to_cart',
+        user_email: 'user@example.com',
+        page: '/rate-cards/xyz',
+        payload: { rateCardId: 'abc', price: 999, category: 'Bridal Styling' },
+        created_at: '2026-09-10T07:55:00Z'
+      },
+      {
+        action: 'stylist_profile_view',
+        user_email: 'priya@example.com',
+        page: '/stylists/123',
+        payload: { stylistId: '123', stylistName: 'Aisha Kapoor' },
+        created_at: '2026-09-10T07:48:12Z'
+      },
+      {
+        action: 'booking_initiated',
+        user_email: 'rahul@example.com',
+        page: '/book/session',
+        payload: { slot: '14:00 - 15:00', date: '2026-09-15' },
+        created_at: '2026-09-10T07:30:45Z'
+      },
+      {
+        action: 'lookbook_filter_change',
+        user_email: null,
+        page: '/lookbook/gallery',
+        payload: { filter: 'Ethnic Wear', gender: 'Female' },
+        created_at: '2026-09-10T07:15:20Z'
+      }
+    ];
+    return logs.slice(0, limit);
   }
 };
